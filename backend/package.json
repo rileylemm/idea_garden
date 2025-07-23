@@ -11,8 +11,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/sqlite3": "^3.1.11",
     "cors": "latest",
-    "express": "latest"
+    "express": "latest",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@types/cors": "latest",
