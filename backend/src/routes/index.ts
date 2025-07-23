@@ -12,9 +12,13 @@ router.get('/health', (req, res) => {
 router.get('/ideas', IdeaController.getAllIdeas);
 router.get('/ideas/search', IdeaController.searchIdeas);
 router.get('/ideas/:id', IdeaController.getIdeaById);
+router.get('/ideas/:id/related', IdeaController.getRelatedIdeas);
 router.post('/ideas', IdeaController.createIdea);
 router.put('/ideas/:id', IdeaController.updateIdea);
 router.delete('/ideas/:id', IdeaController.deleteIdea);
+
+// Embeddings routes
+router.post('/embeddings/update-all', IdeaController.updateAllEmbeddings);
 
 // Categories and tags
 router.get('/categories', IdeaController.getCategories);

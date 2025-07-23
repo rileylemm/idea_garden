@@ -6,6 +6,7 @@ import { ArrowLeft, Calendar, Tag, Edit, Share2 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { apiService, type Idea } from "../services/api"
 import { getPlantTheme, getStageIcon } from "../utils/themeUtils"
+import { RelatedIdeas } from "../components/RelatedIdeas"
 
 export const IdeaDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -167,6 +168,13 @@ export const IdeaDetail: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Related Ideas */}
+      {idea.id && (
+        <div className="mb-8">
+          <RelatedIdeas ideaId={idea.id} limit={5} />
+        </div>
+      )}
 
       {/* Detailed Content */}
       {idea.content && (

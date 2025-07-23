@@ -12,6 +12,15 @@ export interface Idea {
   tags?: { name: string }[];
 }
 
+export interface RelatedIdea {
+  idea_id: number;
+  similarity: number;
+  title: string;
+  description?: string;
+  category?: string;
+  status: string;
+}
+
 export interface CreateIdeaRequest {
   title: string;
   description?: string;
@@ -136,6 +145,16 @@ class ApiService {
       return response.data;
     }
     throw new Error(response.error || 'Failed to search ideas');
+  }
+
+  // Related Ideas
+  async getRelatedIdeas(id: number, limit: number = 5): Promise<RelatedIdea[]> {
+    const response = await this.request<RelatedIdea[]>(`/ideas/${id}/related?limit=${limit}`);
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.error || 'Failed to fetch related ideas');
   }
 
   // Categories and Tags

@@ -1,7 +1,11 @@
+import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import routes from './routes';
 import { initializeDatabase } from './database';
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
 
@@ -35,4 +39,12 @@ const port = process.env.PORT || 4000;
 app.listen(port, () => {
   console.log(`🚀 Idea Garden API is running on http://localhost:${port}`);
   console.log(`📊 Health check: http://localhost:${port}/api/health`);
+  
+  // Check if OpenAI API key is configured
+  if (!process.env.OPENAI_API_KEY) {
+    console.log('⚠️  OpenAI API key not found. Related ideas feature will be disabled.');
+    console.log('   Set OPENAI_API_KEY environment variable to enable semantic search.');
+  } else {
+    console.log('✅ OpenAI API key configured. Related ideas feature enabled.');
+  }
 });

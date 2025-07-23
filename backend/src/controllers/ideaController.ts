@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { IdeaService } from '../services/ideaService';
+import { embeddingService } from '../services/embeddingService';
 import { ApiResponse, CreateIdeaRequest, UpdateIdeaRequest, SearchQuery, Idea } from '../types';
 
 export class IdeaController {
@@ -80,6 +81,19 @@ export class IdeaController {
 
       const newIdea = await IdeaService.createIdea(ideaData);
       
+      // Generate embedding for the new idea
+      try {
+        await embeddingService.generateAndStoreEmbedding(
+          newIdea.id!,
+          newIdea.title,
+          newIdea.description,
+          newIdea.content
+        );
+      } catch (embeddingError) {
+        console.error('Error generating embedding for new idea:', embeddingError);
+        // Don't fail the request if embedding fails
+      }
+      
       const response: ApiResponse<Idea> = {
         success: true,
         data: newIdea,
@@ -116,6 +130,19 @@ export class IdeaController {
           success: false,
           error: 'Idea not found'
         });
+      }
+
+      // Update embedding for the modified idea
+      try {
+        await embeddingService.generateAndStoreEmbedding(
+          updatedIdea.id!,
+          updatedIdea.title,
+          updatedIdea.description,
+          updatedIdea.content
+        );
+      } catch (embeddingError) {
+        console.error('Error updating embedding for idea:', embeddingError);
+        // Don't fail the request if embedding fails
       }
 
       const response: ApiResponse<Idea> = {
@@ -195,6 +222,56 @@ export class IdeaController {
       res.status(500).json({
         success: false,
         error: 'Failed to search ideas'
+      });
+    }
+  }
+
+  // Get related ideas using semantic similarity
+  static async getRelatedIdeas(req: Request, res: Response) {
+    try {
+      const id = parseInt(req.params.id);
+      const limit = parseInt(req.query.limit as string) || 5;
+      
+      if (isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid idea ID'
+        });
+      }
+
+      const relatedIdeas = await embeddingService.findRelatedIdeas(id, limit);
+      
+      const response: ApiResponse<any[]> = {
+        success: true,
+        data: relatedIdeas
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error('Error getting related ideas:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get related ideas'
+      });
+    }
+  }
+
+  // Update embeddings for all ideas
+  static async updateAllEmbeddings(req: Request, res: Response) {
+    try {
+      await embeddingService.updateAllEmbeddings();
+      
+      const response: ApiResponse<null> = {
+        success: true,
+        message: 'All embeddings updated successfully'
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error('Error updating embeddings:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to update embeddings'
       });
     }
   }

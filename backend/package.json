@@ -13,7 +13,9 @@
   "dependencies": {
     "@types/sqlite3": "^3.1.11",
     "cors": "latest",
+    "dotenv": "^17.2.0",
     "express": "latest",
+    "openai": "^4.28.0",
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {

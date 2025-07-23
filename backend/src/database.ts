@@ -47,6 +47,16 @@ export const initializeDatabase = () => {
           FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE,
           PRIMARY KEY (idea_id, tag_id)
         )
+      `);
+
+      // Create embeddings table for semantic search
+      db.run(`
+        CREATE TABLE IF NOT EXISTS embeddings (
+          idea_id INTEGER PRIMARY KEY,
+          embedding TEXT NOT NULL,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (idea_id) REFERENCES ideas(id) ON DELETE CASCADE
+        )
       `, (err) => {
         if (err) {
           console.error('Error creating tables:', err);
