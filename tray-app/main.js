@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, globalShortcut, nativeImage } = require('electron');
+const { app, BrowserWindow, Tray, Menu, globalShortcut, nativeImage, ipcMain } = require('electron');
 const path = require('path');
 
 let mainWindow;
@@ -64,8 +64,9 @@ function createTray() {
     {
       label: 'Quick Capture',
       click: () => {
-        // This will be implemented to open the quick capture modal
-        console.log('Quick capture triggered');
+        if (mainWindow) {
+          mainWindow.webContents.send('open-quick-capture');
+        }
       }
     },
     { type: 'separator' },
@@ -93,14 +94,23 @@ function registerGlobalShortcut() {
   // Register global shortcut for quick capture
   const ret = globalShortcut.register('CommandOrControl+Shift+I', () => {
     console.log('Global shortcut triggered');
-    // This will open the quick capture modal
-    // We'll implement this later
+    // Open the quick capture modal in the frontend
+    if (mainWindow) {
+      mainWindow.webContents.send('open-quick-capture');
+    }
   });
 
   if (!ret) {
     console.log('Global shortcut registration failed');
   }
 }
+
+// IPC handlers
+ipcMain.handle('open-quick-capture', () => {
+  if (mainWindow) {
+    mainWindow.webContents.send('open-quick-capture');
+  }
+});
 
 // App event handlers
 app.whenReady().then(() => {

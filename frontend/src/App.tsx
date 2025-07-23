@@ -6,20 +6,33 @@ import { IdeasList } from "./pages/IdeasList"
 import { IdeaDetail } from "./pages/IdeaDetail"
 import { CreateIdea } from "./pages/CreateIdea"
 import { SearchPage } from "./pages/SearchPage"
+import { QuickCaptureProvider } from "./contexts/QuickCaptureContext.tsx"
+import { QuickCaptureModal } from "./components/QuickCaptureModal"
+import { useElectronAPI } from "./hooks/useElectronAPI"
+
+function AppContent() {
+  useElectronAPI()
+  return (
+    <GardenLayout>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/ideas" element={<IdeasList />} />
+        <Route path="/ideas/:id" element={<IdeaDetail />} />
+        <Route path="/create" element={<CreateIdea />} />
+        <Route path="/search" element={<SearchPage />} />
+      </Routes>
+      <QuickCaptureModal />
+    </GardenLayout>
+  )
+}
 
 function App() {
   return (
     <Router>
-      <GardenLayout>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/ideas" element={<IdeasList />} />
-          <Route path="/ideas/:id" element={<IdeaDetail />} />
-          <Route path="/create" element={<CreateIdea />} />
-          <Route path="/search" element={<SearchPage />} />
-        </Routes>
-      </GardenLayout>
+      <QuickCaptureProvider>
+        <AppContent />
+      </QuickCaptureProvider>
     </Router>
   )
 }

@@ -16,7 +16,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // Listen for events from main process
   onQuickCaptureRequested: (callback) => {
-    ipcRenderer.on('quick-capture-requested', callback);
+    ipcRenderer.on('open-quick-capture', callback);
   },
   
   // Remove listeners
