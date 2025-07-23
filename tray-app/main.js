@@ -21,7 +21,7 @@ function createWindow() {
   });
 
   // Load the frontend app
-  mainWindow.loadURL('http://localhost:5173');
+  mainWindow.loadURL('http://localhost:3000');
 
   // Show window when ready
   mainWindow.once('ready-to-show', () => {
