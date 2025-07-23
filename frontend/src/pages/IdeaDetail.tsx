@@ -3,21 +3,53 @@
 import type React from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { ArrowLeft, Calendar, Tag, Edit, Share2 } from "lucide-react"
-import { sampleIdeas, getPlantTheme, getStageIcon } from "../utils/sampleData"
+import { useState, useEffect } from "react"
+import { apiService, type Idea } from "../services/api"
+import { getPlantTheme, getStageIcon } from "../utils/themeUtils"
 
 export const IdeaDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const [idea, setIdea] = useState<Idea | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const idea = sampleIdeas.find((i) => i.id === id)
+  useEffect(() => {
+    const fetchIdea = async () => {
+      if (!id) return
+      
+      try {
+        setLoading(true)
+        const fetchedIdea = await apiService.getIdeaById(parseInt(id))
+        setIdea(fetchedIdea)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch idea')
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  if (!idea) {
+    fetchIdea()
+  }, [id])
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <div className="text-6xl mb-4">🌱</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Loading idea...</h2>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !idea) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center py-12">
           <div className="text-6xl mb-4">🌱</div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Idea not found</h2>
-          <p className="text-gray-600 mb-6">This idea might have been moved or doesn't exist.</p>
+          <p className="text-gray-600 mb-6">{error || "This idea might have been moved or doesn't exist."}</p>
           <Link
             to="/ideas"
             className="inline-flex items-center space-x-2 text-green-600 hover:text-green-700 font-medium"
@@ -30,8 +62,10 @@ export const IdeaDetail: React.FC = () => {
     )
   }
 
-  const theme = getPlantTheme(idea.category)
-  const stageIcon = getStageIcon(idea.stage)
+  const theme = getPlantTheme(idea.category || 'creative')
+  const stageIcon = getStageIcon(idea.status)
+  const createdAt = idea.created_at ? new Date(idea.created_at) : new Date()
+  const updatedAt = idea.updated_at ? new Date(idea.updated_at) : new Date()
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -63,11 +97,11 @@ export const IdeaDetail: React.FC = () => {
                 <div
                   className={`px-3 py-1 rounded-full text-sm font-medium ${theme.bgColor} ${theme.color} capitalize`}
                 >
-                  {idea.category}
+                  {idea.category || 'creative'}
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className="text-2xl">{stageIcon}</span>
-                  <span className="text-sm text-gray-600 capitalize">{idea.stage}</span>
+                  <span className="text-sm text-gray-600 capitalize">{idea.status}</span>
                 </div>
               </div>
 
@@ -91,16 +125,16 @@ export const IdeaDetail: React.FC = () => {
           <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500 mb-6">
             <div className="flex items-center space-x-2">
               <Calendar className="h-4 w-4" />
-              <span>Planted {idea.createdAt.toLocaleDateString()}</span>
+              <span>Planted {createdAt.toLocaleDateString()}</span>
             </div>
             <div className="flex items-center space-x-2">
               <Calendar className="h-4 w-4" />
-              <span>Last tended {idea.updatedAt.toLocaleDateString()}</span>
+              <span>Last tended {updatedAt.toLocaleDateString()}</span>
             </div>
           </div>
 
           {/* Tags */}
-          {idea.tags.length > 0 && (
+          {idea.tags && idea.tags.length > 0 && (
             <div className="flex items-center space-x-2 mb-6">
               <Tag className="h-4 w-4 text-gray-400" />
               <div className="flex flex-wrap gap-2">
@@ -109,7 +143,7 @@ export const IdeaDetail: React.FC = () => {
                     key={index}
                     className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition-colors cursor-pointer"
                   >
-                    {tag}
+                    {tag.name}
                   </span>
                 ))}
               </div>
@@ -120,13 +154,13 @@ export const IdeaDetail: React.FC = () => {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-gray-700">Growth Progress</span>
-              <span className="text-sm text-gray-500 capitalize">{idea.stage}</span>
+              <span className="text-sm text-gray-500 capitalize">{idea.status}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className={`h-2 rounded-full transition-all duration-300 ${theme.color.replace("text-", "bg-")}`}
                 style={{
-                  width: idea.stage === "seedling" ? "33%" : idea.stage === "growing" ? "66%" : "100%",
+                  width: idea.status === "seedling" ? "33%" : idea.status === "growing" ? "66%" : "100%",
                 }}
               />
             </div>

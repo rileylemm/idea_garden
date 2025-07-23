@@ -4,37 +4,50 @@ import type React from "react"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { ArrowLeft, Sprout } from "lucide-react"
-import type { IdeaCategory, GrowthStage } from "../types/idea"
-import { getPlantTheme } from "../utils/sampleData"
+import { apiService } from "../services/api"
 
 export const CreateIdea: React.FC = () => {
   const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    category: "technology" as IdeaCategory,
-    stage: "seedling" as GrowthStage,
+    category: "technology",
+    status: "seedling",
     tags: "",
     content: "",
   })
 
-  const categories: IdeaCategory[] = ["technology", "business", "creative", "personal", "research", "innovation"]
-  const stages: GrowthStage[] = ["seedling", "growing", "mature"]
+  const categories = ["technology", "business", "creative", "personal", "research", "innovation"]
+  const stages = ["seedling", "growing", "mature"]
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, this would save to a database
-    console.log("New idea:", {
-      ...formData,
-      tags: formData.tags
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter(Boolean),
-      id: Date.now().toString(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
-    navigate("/ideas")
+    setLoading(true)
+    setError(null)
+
+    try {
+      const ideaData = {
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        status: formData.status as 'seedling' | 'growing' | 'mature',
+        content: formData.content,
+        tags: formData.tags
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter(Boolean),
+      }
+
+      await apiService.createIdea(ideaData)
+      navigate("/ideas")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create idea')
+      console.error('Error creating idea:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -43,6 +56,49 @@ export const CreateIdea: React.FC = () => {
       [e.target.name]: e.target.value,
     }))
   }
+
+  const getPlantTheme = (category: string) => {
+    const themes = {
+      technology: {
+        icon: "💻",
+        color: "text-blue-600",
+        bgColor: "bg-blue-50",
+        borderColor: "border-blue-200",
+      },
+      business: {
+        icon: "💼",
+        color: "text-green-600",
+        bgColor: "bg-green-50",
+        borderColor: "border-green-200",
+      },
+      creative: {
+        icon: "🎨",
+        color: "text-purple-600",
+        bgColor: "bg-purple-50",
+        borderColor: "border-purple-200",
+      },
+      personal: {
+        icon: "🌱",
+        color: "text-emerald-600",
+        bgColor: "bg-emerald-50",
+        borderColor: "border-emerald-200",
+      },
+      research: {
+        icon: "🔬",
+        color: "text-orange-600",
+        bgColor: "bg-orange-50",
+        borderColor: "border-orange-200",
+      },
+      innovation: {
+        icon: "🚀",
+        color: "text-red-600",
+        bgColor: "bg-red-50",
+        borderColor: "border-red-200",
+      },
+    };
+
+    return themes[category as keyof typeof themes] || themes.personal;
+  };
 
   const selectedTheme = getPlantTheme(formData.category)
 
@@ -63,6 +119,13 @@ export const CreateIdea: React.FC = () => {
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Plant a New Idea</h1>
         <p className="text-gray-600">Give your idea the care it needs to grow and flourish</p>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <p className="text-red-800">{error}</p>
+        </div>
+      )}
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-8">
@@ -100,11 +163,11 @@ export const CreateIdea: React.FC = () => {
                 id="description"
                 name="description"
                 required
-                rows={3}
                 value={formData.description}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-                placeholder="Briefly describe your idea..."
+                rows={3}
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="Describe your idea in a few sentences..."
               />
             </div>
 
@@ -112,12 +175,11 @@ export const CreateIdea: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
-                  Category *
+                  Category
                 </label>
                 <select
                   id="category"
                   name="category"
-                  required
                   value={formData.category}
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -131,14 +193,13 @@ export const CreateIdea: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="stage" className="block text-sm font-medium text-gray-700 mb-2">
-                  Growth Stage *
+                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
+                  Growth Stage
                 </label>
                 <select
-                  id="stage"
-                  name="stage"
-                  required
-                  value={formData.stage}
+                  id="status"
+                  name="status"
+                  value={formData.status}
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
@@ -154,7 +215,7 @@ export const CreateIdea: React.FC = () => {
             {/* Tags */}
             <div>
               <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">
-                Tags
+                Tags (comma-separated)
               </label>
               <input
                 type="text"
@@ -163,57 +224,44 @@ export const CreateIdea: React.FC = () => {
                 value={formData.tags}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Enter tags separated by commas (e.g., AI, mobile, innovation)"
+                placeholder="innovation, tech, startup"
               />
-              <p className="text-sm text-gray-500 mt-1">Separate multiple tags with commas</p>
             </div>
           </div>
         </div>
 
         {/* Detailed Content */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Detailed Notes</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Detailed Content</h2>
           <div>
             <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
-              Detailed Description
+              Full Description
             </label>
             <textarea
               id="content"
               name="content"
-              rows={8}
               value={formData.content}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-              placeholder="Elaborate on your idea... What problem does it solve? How would it work? What makes it unique?"
+              rows={8}
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              placeholder="Expand on your idea with more details, research, or thoughts..."
             />
           </div>
         </div>
 
         {/* Preview */}
-        <div className={`bg-white rounded-2xl shadow-sm border-2 ${selectedTheme.borderColor} p-8`}>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
           <h2 className="text-xl font-bold text-gray-900 mb-6">Preview</h2>
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="text-4xl">{selectedTheme.icon}</div>
-            <div
-              className={`px-3 py-1 rounded-full text-sm font-medium ${selectedTheme.bgColor} ${selectedTheme.color} capitalize`}
-            >
-              {formData.category}
+          <div className={`p-6 rounded-lg border-2 ${selectedTheme.borderColor} ${selectedTheme.bgColor}`}>
+            <div className="flex items-center space-x-3 mb-4">
+              <span className="text-3xl">{selectedTheme.icon}</span>
+              <div>
+                <h3 className="font-semibold text-gray-900">{formData.title || "Your idea title"}</h3>
+                <p className="text-sm text-gray-600">{formData.category}</p>
+              </div>
             </div>
-            <div className="text-sm text-gray-600 capitalize">{formData.stage}</div>
+            <p className="text-gray-700">{formData.description || "Your idea description will appear here..."}</p>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            {formData.title || "Your idea title will appear here"}
-          </h3>
-          <p className="text-gray-600 mb-4">{formData.description || "Your description will appear here"}</p>
-          {formData.tags && (
-            <div className="flex flex-wrap gap-2">
-              {formData.tags.split(",").map((tag, index) => (
-                <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
-                  {tag.trim()}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* Submit Button */}
@@ -221,16 +269,26 @@ export const CreateIdea: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="px-6 py-3 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-lg hover:shadow-xl flex items-center space-x-2"
+            disabled={loading}
+            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
           >
-            <Sprout className="h-4 w-4" />
-            <span>Plant Idea</span>
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>Planting...</span>
+              </>
+            ) : (
+              <>
+                <Sprout className="h-4 w-4" />
+                <span>Plant Idea</span>
+              </>
+            )}
           </button>
         </div>
       </form>
