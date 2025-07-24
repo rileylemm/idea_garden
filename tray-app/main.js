@@ -2,6 +2,7 @@ const { app, BrowserWindow, Tray, Menu, globalShortcut, nativeImage, ipcMain } =
 const path = require('path');
 
 let mainWindow;
+let quickCaptureWindow;
 let tray;
 let isQuitting = false;
 
@@ -42,6 +43,49 @@ function createWindow() {
   });
 }
 
+function createQuickCaptureWindow() {
+  // Create a small, always-on-top window for quick capture
+  quickCaptureWindow = new BrowserWindow({
+    width: 500,
+    height: 400,
+    alwaysOnTop: true,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    skipTaskbar: true,
+    show: false,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js')
+    },
+    icon: path.join(__dirname, 'assets/icon.png'),
+    titleBarStyle: 'hidden',
+    frame: false,
+    transparent: true
+  });
+
+  // Load the quick capture page
+  quickCaptureWindow.loadURL('http://localhost:3000/quick-capture');
+
+  // Show window when ready
+  quickCaptureWindow.once('ready-to-show', () => {
+    quickCaptureWindow.show();
+    quickCaptureWindow.focus();
+  });
+
+  // Handle window closed
+  quickCaptureWindow.on('closed', () => {
+    quickCaptureWindow = null;
+  });
+
+  // Prevent window from being closed when user clicks X
+  quickCaptureWindow.on('close', (event) => {
+    event.preventDefault();
+    quickCaptureWindow.hide();
+  });
+}
+
 function createTray() {
   // Create tray icon
   const iconPath = path.join(__dirname, 'assets/icon.png');
@@ -64,8 +108,14 @@ function createTray() {
     {
       label: 'Quick Capture',
       click: () => {
-        if (mainWindow) {
-          mainWindow.webContents.send('open-quick-capture');
+        console.log('Tray menu quick capture clicked');
+        if (quickCaptureWindow) {
+          console.log('Showing quick capture window from tray menu');
+          quickCaptureWindow.show();
+          quickCaptureWindow.focus();
+        } else {
+          console.log('Creating new quick capture window from tray menu');
+          createQuickCaptureWindow();
         }
       }
     },
@@ -94,9 +144,14 @@ function registerGlobalShortcut() {
   // Register global shortcut for quick capture
   const ret = globalShortcut.register('CommandOrControl+Shift+I', () => {
     console.log('Global shortcut triggered');
-    // Open the quick capture modal in the frontend
-    if (mainWindow) {
-      mainWindow.webContents.send('open-quick-capture');
+    // Show the quick capture window
+    if (quickCaptureWindow) {
+      console.log('Showing quick capture window');
+      quickCaptureWindow.show();
+      quickCaptureWindow.focus();
+    } else {
+      console.log('Creating new quick capture window');
+      createQuickCaptureWindow();
     }
   });
 
@@ -109,6 +164,12 @@ function registerGlobalShortcut() {
 ipcMain.handle('open-quick-capture', () => {
   if (mainWindow) {
     mainWindow.webContents.send('open-quick-capture');
+  }
+});
+
+ipcMain.handle('close-quick-capture-window', () => {
+  if (quickCaptureWindow) {
+    quickCaptureWindow.hide();
   }
 });
 

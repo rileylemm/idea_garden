@@ -5,6 +5,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('electronAPI', {
   // Quick capture functionality
   openQuickCapture: () => ipcRenderer.invoke('open-quick-capture'),
+  closeQuickCaptureWindow: () => ipcRenderer.invoke('close-quick-capture-window'),
   
   // Window management
   minimizeWindow: () => ipcRenderer.invoke('minimize-window'),
