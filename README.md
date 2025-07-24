@@ -12,6 +12,10 @@ A personal tool to capture, evolve, and connect your ideas — helping seedlings
 - **🎨 Beautiful UI**: Garden-themed interface with plant-based metaphors
 - **💾 Persistent Storage**: SQLite database for reliable data storage
 - **⚡ Real-time Updates**: Instant feedback and smooth interactions
+- **🖥️ Desktop Tray App**: Cross-platform Electron app with system tray integration
+- **⚡ Quick Capture**: Global shortcut (`Cmd/Ctrl + Shift + I`) for instant idea capture
+- **🌐 System-wide Access**: Capture ideas from anywhere without interrupting your workflow
+- **🎯 Floating Modal**: Beautiful floating window that appears above all applications
 
 ## Tech Stack
 
@@ -28,6 +32,12 @@ A personal tool to capture, evolve, and connect your ideas — helping seedlings
 - **TypeScript** for type-safe server code
 - **OpenAI API** for semantic embeddings and related ideas
 - **CORS** enabled for frontend-backend communication
+
+### Desktop App
+- **Electron** for cross-platform desktop application
+- **System Tray Integration** for always-accessible quick capture
+- **Global Shortcuts** for instant idea capture from anywhere
+- **Floating Windows** that appear above all applications
 
 ### Database Schema
 - **Ideas**: Core idea data with titles, descriptions, content, and metadata
@@ -52,6 +62,10 @@ idea_garden/
 │   │   ├── services/      # Business logic
 │   │   ├── routes/        # API route definitions
 │   │   └── types/         # TypeScript type definitions
+├── tray-app/          # Electron desktop app
+│   ├── main.js         # Main Electron process
+│   ├── preload.js      # Secure bridge to renderer
+│   └── assets/         # App icons and resources
 ├── db/                # Database files (SQLite)
 └── scripts/           # Utility scripts
 ```
@@ -103,6 +117,20 @@ npm run dev
 
 The API will be available at `http://localhost:4000`
 
+### Desktop App Development
+
+```bash
+cd tray-app
+npm install
+npm start
+```
+
+The desktop app will:
+- Start the main Idea Garden window
+- Create a system tray icon (menu bar on Mac, system tray on Windows/Linux)
+- Register global shortcut `Cmd + Shift + I` (Mac) or `Ctrl + Shift + I` (Windows/Linux)
+- Enable quick capture from anywhere on your system
+
 ### Database Setup
 
 The SQLite database is automatically created when you first run the backend. The schema includes:
@@ -145,13 +173,45 @@ The SQLite database is automatically created when you first run the backend. The
 ✅ **Related Ideas UI**: Beautiful component showing AI-powered connections  
 ✅ **Responsive Design**: Works on desktop and mobile  
 ✅ **Type Safety**: Full TypeScript coverage  
+✅ **Desktop Tray App**: Cross-platform Electron app with system tray integration  
+✅ **Quick Capture**: Global shortcut for instant idea capture from anywhere  
+✅ **Floating Modal**: System-wide floating window that doesn't interrupt workflow  
+✅ **Focus Management**: Smart window management that doesn't steal focus  
 
 ## Development Workflow
 
+### Web App Development
 1. **Start Backend**: `cd backend && npm run dev`
 2. **Start Frontend**: `cd frontend && npm run dev` (in new terminal)
 3. **Access App**: Open `http://localhost:5173` in browser
 4. **API Testing**: Backend available at `http://localhost:4000`
+
+### Desktop App Development
+1. **Start Backend**: `cd backend && npm run dev`
+2. **Start Frontend**: `cd frontend && npm run dev` (in new terminal)
+3. **Start Desktop App**: `cd tray-app && npm start`
+4. **Test Quick Capture**: Press `Cmd + Shift + I` (Mac) or `Ctrl + Shift + I` (Windows/Linux)
+5. **Access Tray Menu**: Right-click the tray icon for additional options
+
+## Desktop App Features
+
+### Quick Capture
+The desktop app provides **instant idea capture** from anywhere on your system:
+
+- **Global Shortcut**: `Cmd + Shift + I` (Mac) or `Ctrl + Shift + I` (Windows/Linux)
+- **Floating Window**: Beautiful modal that appears above all applications
+- **Non-intrusive**: Doesn't interrupt your current workflow
+- **Smart Focus**: Main app stays in background when quick capture closes
+
+### System Tray Integration
+- **Always Accessible**: Tray icon in menu bar (Mac) or system tray (Windows/Linux)
+- **Quick Actions**: Right-click for menu with options
+- **Main App Access**: Click tray icon to open full Idea Garden interface
+
+### Cross-Platform Support
+- **macOS**: Menu bar integration with native look and feel
+- **Windows**: System tray with Windows-style interface
+- **Linux**: System tray with Linux desktop integration
 
 ## Testing the Related Ideas Engine
 
@@ -204,3 +264,7 @@ This is a personal project, but contributions are welcome! Please ensure any con
 - [ ] Advanced analytics and insights
 - [ ] Collaborative features
 - [ ] Mobile app version
+- [ ] Voice input for quick capture (Whisper integration)
+- [ ] Offline mode for capturing without active backend
+- [ ] Auto-launch at system login
+- [ ] Local-only mode for privacy-first users
