@@ -57,6 +57,19 @@ export const initializeDatabase = () => {
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (idea_id) REFERENCES ideas(id) ON DELETE CASCADE
         )
+      `);
+
+      // Create documents table for idea documents
+      db.run(`
+        CREATE TABLE IF NOT EXISTS documents (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          idea_id INTEGER NOT NULL,
+          title TEXT NOT NULL,
+          content TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (idea_id) REFERENCES ideas(id) ON DELETE CASCADE
+        )
       `, (err) => {
         if (err) {
           console.error('Error creating tables:', err);

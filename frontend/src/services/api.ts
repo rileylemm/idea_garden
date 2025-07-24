@@ -46,6 +46,25 @@ export interface SearchQuery {
   tags?: string;
 }
 
+export interface Document {
+  id?: number;
+  idea_id: number;
+  title: string;
+  content?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreateDocumentRequest {
+  title: string;
+  content?: string;
+}
+
+export interface UpdateDocumentRequest {
+  title?: string;
+  content?: string;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -180,6 +199,59 @@ class ApiService {
   async healthCheck(): Promise<boolean> {
     const response = await this.request('/health');
     return response.success;
+  }
+
+  // Documents
+  async getDocumentsByIdeaId(ideaId: number): Promise<Document[]> {
+    const response = await this.request<Document[]>(`/ideas/${ideaId}/documents`);
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.error || 'Failed to fetch documents');
+  }
+
+  async getDocumentById(ideaId: number, documentId: number): Promise<Document> {
+    const response = await this.request<Document>(`/ideas/${ideaId}/documents/${documentId}`);
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.error || 'Failed to fetch document');
+  }
+
+  async createDocument(ideaId: number, documentData: CreateDocumentRequest): Promise<Document> {
+    const response = await this.request<Document>(`/ideas/${ideaId}/documents`, {
+      method: 'POST',
+      body: JSON.stringify(documentData),
+    });
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.error || 'Failed to create document');
+  }
+
+  async updateDocument(ideaId: number, documentId: number, documentData: UpdateDocumentRequest): Promise<Document> {
+    const response = await this.request<Document>(`/ideas/${ideaId}/documents/${documentId}`, {
+      method: 'PUT',
+      body: JSON.stringify(documentData),
+    });
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.error || 'Failed to update document');
+  }
+
+  async deleteDocument(ideaId: number, documentId: number): Promise<void> {
+    const response = await this.request<void>(`/ideas/${ideaId}/documents/${documentId}`, {
+      method: 'DELETE',
+    });
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to delete document');
+    }
   }
 }
 

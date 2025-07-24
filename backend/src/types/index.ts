@@ -40,6 +40,25 @@ export interface SearchQuery {
   tags?: string;
 }
 
+export interface Document {
+  id?: number;
+  idea_id: number;
+  title: string;
+  content?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreateDocumentRequest {
+  title: string;
+  content?: string;
+}
+
+export interface UpdateDocumentRequest {
+  title?: string;
+  content?: string;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;

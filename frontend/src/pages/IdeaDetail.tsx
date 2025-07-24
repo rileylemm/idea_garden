@@ -7,6 +7,7 @@ import { useState, useEffect } from "react"
 import { apiService, type Idea } from "../services/api"
 import { getPlantTheme, getStageIcon } from "../utils/themeUtils"
 import { RelatedIdeas } from "../components/RelatedIdeas"
+import { DocumentsSection } from "../components/DocumentsSection"
 
 export const IdeaDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -14,6 +15,7 @@ export const IdeaDetail: React.FC = () => {
   const [idea, setIdea] = useState<Idea | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showDocuments, setShowDocuments] = useState(false)
 
   useEffect(() => {
     const fetchIdea = async () => {
@@ -169,31 +171,19 @@ export const IdeaDetail: React.FC = () => {
         </div>
       </div>
 
-      {/* Related Ideas */}
-      {idea.id && (
-        <div className="mb-8">
-          <RelatedIdeas ideaId={idea.id} limit={5} />
-        </div>
-      )}
-
-      {/* Detailed Content */}
-      {idea.content && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Detailed Notes</h2>
-          <div className="prose prose-gray max-w-none">
-            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{idea.content}</p>
-          </div>
-        </div>
-      )}
-
       {/* Growth Actions */}
       <div className="mt-8 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100">
         <h3 className="text-lg font-medium text-gray-900 mb-4">🌱 Help This Idea Grow</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="p-4 bg-white rounded-lg border border-green-200 hover:border-green-300 transition-colors text-left">
+          <button 
+            onClick={() => setShowDocuments(!showDocuments)}
+            className="p-4 bg-white rounded-lg border border-green-200 hover:border-green-300 transition-colors text-left"
+          >
             <div className="text-2xl mb-2">💡</div>
             <h4 className="font-medium text-gray-900 mb-1">Add Research</h4>
-            <p className="text-sm text-gray-600">Gather more information and insights</p>
+            <p className="text-sm text-gray-600">
+              {showDocuments ? 'Hide documents' : 'Gather more information and insights'}
+            </p>
           </button>
           <button className="p-4 bg-white rounded-lg border border-green-200 hover:border-green-300 transition-colors text-left">
             <div className="text-2xl mb-2">🔗</div>
@@ -207,6 +197,30 @@ export const IdeaDetail: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Documents Section */}
+      {showDocuments && idea.id && (
+        <div className="mt-8">
+          <DocumentsSection ideaId={idea.id} />
+        </div>
+      )}
+
+      {/* Detailed Content */}
+      {idea.content && (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Detailed Notes</h2>
+          <div className="prose prose-gray max-w-none">
+            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{idea.content}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Related Ideas */}
+      {idea.id && (
+        <div className="mb-8">
+          <RelatedIdeas ideaId={idea.id} limit={5} />
+        </div>
+      )}
     </div>
   )
 }
