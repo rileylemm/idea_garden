@@ -5,6 +5,7 @@ let mainWindow;
 let quickCaptureWindow;
 let tray;
 let isQuitting = false;
+let shouldKeepMainWindowHidden = false;
 
 // Keep a global reference of the window object
 function createWindow() {
@@ -39,7 +40,13 @@ function createWindow() {
     if (!isQuitting) {
       event.preventDefault();
       mainWindow.hide();
+      shouldKeepMainWindowHidden = true;
     }
+  });
+
+  // Track when main window is shown
+  mainWindow.on('show', () => {
+    shouldKeepMainWindowHidden = false;
   });
 }
 
@@ -54,6 +61,7 @@ function createQuickCaptureWindow() {
     maximizable: false,
     skipTaskbar: true,
     show: false,
+    focusable: true,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -84,6 +92,14 @@ function createQuickCaptureWindow() {
     event.preventDefault();
     quickCaptureWindow.hide();
   });
+
+  // Prevent main window from getting focus when quick capture window hides
+  quickCaptureWindow.on('hide', () => {
+    // Don't bring main window to front if it should stay hidden
+    if (shouldKeepMainWindowHidden && mainWindow) {
+      mainWindow.hide();
+    }
+  });
 }
 
 function createTray() {
@@ -100,6 +116,7 @@ function createTray() {
       label: 'Open Idea Garden',
       click: () => {
         if (mainWindow) {
+          shouldKeepMainWindowHidden = false;
           mainWindow.show();
           mainWindow.focus();
         }
@@ -134,6 +151,7 @@ function createTray() {
   // Handle tray click
   tray.on('click', () => {
     if (mainWindow) {
+      shouldKeepMainWindowHidden = false;
       mainWindow.show();
       mainWindow.focus();
     }
@@ -170,6 +188,10 @@ ipcMain.handle('open-quick-capture', () => {
 ipcMain.handle('close-quick-capture-window', () => {
   if (quickCaptureWindow) {
     quickCaptureWindow.hide();
+    // Don't bring main window to front if it should stay hidden
+    if (shouldKeepMainWindowHidden && mainWindow) {
+      mainWindow.hide();
+    }
   }
 });
 
