@@ -13,6 +13,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    focusable: false, // Start as unfocusable
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -27,7 +28,7 @@ function createWindow() {
 
   // Show window when ready
   mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
+    mainWindow.showInactive(); // Show without taking focus
   });
 
   // Handle window closed
@@ -41,13 +42,27 @@ function createWindow() {
       event.preventDefault();
       mainWindow.hide();
       shouldKeepMainWindowHidden = true;
+      mainWindow.setFocusable(false); // Make unfocusable when hidden
+      console.log('Main window closed, shouldKeepMainWindowHidden set to true');
     }
   });
 
   // Track when main window is shown
   mainWindow.on('show', () => {
     shouldKeepMainWindowHidden = false;
+    console.log('Main window shown, shouldKeepMainWindowHidden set to false');
   });
+
+  // Set focusable property based on shouldKeepMainWindowHidden
+  const updateMainWindowFocusable = () => {
+    if (mainWindow) {
+      const focusable = !shouldKeepMainWindowHidden;
+      mainWindow.setFocusable(focusable);
+      console.log('Main window focusable set to:', focusable);
+    }
+  };
+
+
 }
 
 function createQuickCaptureWindow() {
@@ -62,6 +77,8 @@ function createQuickCaptureWindow() {
     skipTaskbar: true,
     show: false,
     focusable: true,
+    parent: null, // No parent window - completely independent
+    modal: false, // Not a modal - doesn't block parent
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -87,18 +104,19 @@ function createQuickCaptureWindow() {
     quickCaptureWindow = null;
   });
 
-  // Prevent window from being closed when user clicks X
+  // Allow window to be closed completely
   quickCaptureWindow.on('close', (event) => {
-    event.preventDefault();
-    quickCaptureWindow.hide();
+    // Don't prevent default - let it close
+    quickCaptureWindow = null;
   });
 
-  // Prevent main window from getting focus when quick capture window hides
+  // When quick capture window is hidden/closed, don't affect main window focus
   quickCaptureWindow.on('hide', () => {
-    // Don't bring main window to front if it should stay hidden
-    if (shouldKeepMainWindowHidden && mainWindow) {
-      mainWindow.hide();
-    }
+    console.log('Quick capture window hiding');
+  });
+
+  quickCaptureWindow.on('closed', () => {
+    console.log('Quick capture window closed');
   });
 }
 
@@ -117,8 +135,10 @@ function createTray() {
       click: () => {
         if (mainWindow) {
           shouldKeepMainWindowHidden = false;
-          mainWindow.show();
+          mainWindow.setFocusable(true); // Make focusable for user action
+          mainWindow.show(); // Use show() + focus() for explicit user action
           mainWindow.focus();
+          console.log('Main window opened from tray menu');
         }
       }
     },
@@ -126,14 +146,8 @@ function createTray() {
       label: 'Quick Capture',
       click: () => {
         console.log('Tray menu quick capture clicked');
-        if (quickCaptureWindow) {
-          console.log('Showing quick capture window from tray menu');
-          quickCaptureWindow.show();
-          quickCaptureWindow.focus();
-        } else {
-          console.log('Creating new quick capture window from tray menu');
-          createQuickCaptureWindow();
-        }
+        console.log('Creating new quick capture window from tray menu');
+        createQuickCaptureWindow();
       }
     },
     { type: 'separator' },
@@ -152,8 +166,10 @@ function createTray() {
   tray.on('click', () => {
     if (mainWindow) {
       shouldKeepMainWindowHidden = false;
-      mainWindow.show();
+      mainWindow.setFocusable(true); // Make focusable for user action
+      mainWindow.show(); // Use show() + focus() for explicit user action
       mainWindow.focus();
+      console.log('Main window opened from tray click');
     }
   });
 }
@@ -162,15 +178,9 @@ function registerGlobalShortcut() {
   // Register global shortcut for quick capture
   const ret = globalShortcut.register('CommandOrControl+Shift+I', () => {
     console.log('Global shortcut triggered');
-    // Show the quick capture window
-    if (quickCaptureWindow) {
-      console.log('Showing quick capture window');
-      quickCaptureWindow.show();
-      quickCaptureWindow.focus();
-    } else {
-      console.log('Creating new quick capture window');
-      createQuickCaptureWindow();
-    }
+    // Always create a new quick capture window
+    console.log('Creating new quick capture window');
+    createQuickCaptureWindow();
   });
 
   if (!ret) {
@@ -186,12 +196,9 @@ ipcMain.handle('open-quick-capture', () => {
 });
 
 ipcMain.handle('close-quick-capture-window', () => {
+  console.log('close-quick-capture-window IPC called');
   if (quickCaptureWindow) {
-    quickCaptureWindow.hide();
-    // Don't bring main window to front if it should stay hidden
-    if (shouldKeepMainWindowHidden && mainWindow) {
-      mainWindow.hide();
-    }
+    quickCaptureWindow.close();
   }
 });
 
