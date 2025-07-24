@@ -51,6 +51,8 @@ export interface Document {
   idea_id: number;
   title: string;
   content?: string;
+  document_type?: 'uploaded' | 'ai_generated';
+  conversation_id?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -58,11 +60,22 @@ export interface Document {
 export interface CreateDocumentRequest {
   title: string;
   content?: string;
+  document_type?: 'uploaded' | 'ai_generated';
+  conversation_id?: string;
 }
 
 export interface UpdateDocumentRequest {
   title?: string;
   content?: string;
+}
+
+export interface DocumentVersion {
+  id?: number;
+  document_id: number;
+  version_number: number;
+  content: string;
+  created_at?: string;
+  created_by?: string;
 }
 
 export interface ActionPlan {
@@ -286,6 +299,25 @@ class ApiService {
     if (!response.success) {
       throw new Error(response.error || 'Failed to delete document');
     }
+  }
+
+  // Document Versioning
+  async getDocumentVersions(documentId: number): Promise<DocumentVersion[]> {
+    const response = await this.request<DocumentVersion[]>(`/documents/${documentId}/versions`);
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.error || 'Failed to fetch document versions');
+  }
+
+  async getDocumentVersion(documentId: number, versionNumber: number): Promise<DocumentVersion> {
+    const response = await this.request<DocumentVersion>(`/documents/${documentId}/versions/${versionNumber}`);
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.error || 'Failed to fetch document version');
   }
 
   // Action Plans

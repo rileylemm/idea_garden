@@ -3,12 +3,14 @@ import { Plus, FileText, Loader2, Upload } from 'lucide-react';
 import { Document, apiService, CreateDocumentRequest, UpdateDocumentRequest } from '../services/api';
 import { DocumentCard } from './DocumentCard';
 import { DocumentEditor } from './DocumentEditor';
+import { DocumentVersionModal } from './DocumentVersionModal';
 
 interface DocumentsSectionProps {
   ideaId: number;
+  onContinueChat?: (conversationId: string) => void;
 }
 
-export const DocumentsSection: React.FC<DocumentsSectionProps> = ({ ideaId }) => {
+export const DocumentsSection: React.FC<DocumentsSectionProps> = ({ ideaId, onContinueChat }) => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,6 +18,9 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({ ideaId }) =>
   const [editingDocument, setEditingDocument] = useState<Document | null>(null);
   const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
   const [isDragOver, setIsDragOver] = useState(false);
+  const [showVersionModal, setShowVersionModal] = useState(false);
+  const [selectedDocumentId, setSelectedDocumentId] = useState<number | null>(null);
+  const [selectedDocumentTitle, setSelectedDocumentTitle] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -73,6 +78,21 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({ ideaId }) =>
   const handleCloseEditor = () => {
     setIsEditorOpen(false);
     setEditingDocument(null);
+  };
+
+  const handleViewVersions = (documentId: number) => {
+    const document = documents.find(d => d.id === documentId);
+    if (document) {
+      setSelectedDocumentId(documentId);
+      setSelectedDocumentTitle(document.title);
+      setShowVersionModal(true);
+    }
+  };
+
+  const handleCloseVersionModal = () => {
+    setShowVersionModal(false);
+    setSelectedDocumentId(null);
+    setSelectedDocumentTitle('');
   };
 
   const handleQuickUpload = async (file: File) => {
@@ -222,6 +242,8 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({ ideaId }) =>
                 document={document}
                 onEdit={handleEditDocument}
                 onDelete={handleDeleteDocument}
+                onContinueChat={onContinueChat}
+                onViewVersions={handleViewVersions}
               />
             ))}
           </div>
@@ -244,6 +266,16 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({ ideaId }) =>
           onChange={handleFileInputChange}
           className="hidden"
         />
+
+        {/* Document Version Modal */}
+        {selectedDocumentId && (
+          <DocumentVersionModal
+            isOpen={showVersionModal}
+            onClose={handleCloseVersionModal}
+            documentId={selectedDocumentId}
+            documentTitle={selectedDocumentTitle}
+          />
+        )}
     </>
   );
 }; 

@@ -94,6 +94,7 @@ interface ProjectOverviewChatProps {
   idea: Idea;
   documents: Document[];
   onGenerateDocument: (content: string, title: string) => void;
+  conversationId?: string;
 }
 
 export const ProjectOverviewChat: React.FC<ProjectOverviewChatProps> = ({
@@ -101,7 +102,8 @@ export const ProjectOverviewChat: React.FC<ProjectOverviewChatProps> = ({
   onClose,
   idea,
   documents,
-  onGenerateDocument
+  onGenerateDocument,
+  conversationId
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentInput, setCurrentInput] = useState('');
@@ -127,6 +129,14 @@ export const ProjectOverviewChat: React.FC<ProjectOverviewChatProps> = ({
       startConversation();
     }
   }, [isOpen]);
+
+  // Load conversation if conversationId is provided
+  useEffect(() => {
+    if (conversationId && isOpen) {
+      // TODO: Load conversation from backend
+      console.log('Loading conversation:', conversationId);
+    }
+  }, [conversationId, isOpen]);
 
   const startConversation = () => {
     const initialMessage: Message = {

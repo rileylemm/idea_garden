@@ -51,7 +51,21 @@ router.post('/project-overview', async (req, res) => {
         const document = await chatService.generateDocumentWithAI(messages, idea, documents, template, tone);
         
         console.log('Document generated successfully, length:', document.length);
-        res.json({ document });
+        
+        // Save the conversation and create the AI-generated document
+        const conversationId = await chatService.saveConversation(idea.id, messages, document);
+        const aiDocument = await chatService.createAIGeneratedDocument(
+          idea.id, 
+          `Project Overview - ${idea.title}`, 
+          document, 
+          conversationId
+        );
+        
+        res.json({ 
+          document,
+          conversationId,
+          aiDocumentId: aiDocument.id
+        });
       } catch (error) {
         console.error('Document generation error:', error);
         res.status(500).json({ error: 'Failed to generate document' });

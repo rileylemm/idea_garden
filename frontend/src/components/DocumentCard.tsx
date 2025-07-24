@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
-import { FileText, Edit, Trash2, Calendar, X } from 'lucide-react';
+import { FileText, Edit, Trash2, Calendar, X, MessageSquare, Sparkles, History } from 'lucide-react';
 import { Document } from '../services/api';
 
 interface DocumentCardProps {
   document: Document;
   onEdit: (document: Document) => void;
   onDelete: (documentId: number) => void;
+  onContinueChat?: (conversationId: string) => void;
+  onViewVersions?: (documentId: number) => void;
 }
 
-export const DocumentCard: React.FC<DocumentCardProps> = ({ document, onEdit, onDelete }) => {
+export const DocumentCard: React.FC<DocumentCardProps> = ({ document, onEdit, onDelete, onContinueChat, onViewVersions }) => {
   const [showFullContent, setShowFullContent] = useState(false);
+  
+  const isAIGenerated = document.document_type === 'ai_generated';
   
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'Recently';
@@ -26,22 +30,57 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document, onEdit, on
   };
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+    <div className={`rounded-xl p-6 shadow-sm border transition-shadow ${
+      isAIGenerated 
+        ? 'bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200 hover:shadow-md' 
+        : 'bg-white border-gray-200 hover:shadow-md'
+    }`}>
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <FileText className="h-5 w-5 text-blue-600" />
+          <div className={`p-2 rounded-lg ${
+            isAIGenerated 
+              ? 'bg-gradient-to-br from-purple-100 to-blue-100' 
+              : 'bg-blue-100'
+          }`}>
+            {isAIGenerated ? (
+              <Sparkles className="h-5 w-5 text-purple-600" />
+            ) : (
+              <FileText className="h-5 w-5 text-blue-600" />
+            )}
           </div>
           <div>
             <h3 className="font-semibold text-gray-900 line-clamp-1">{document.title}</h3>
             <div className="flex items-center space-x-2 text-sm text-gray-500">
               <Calendar className="h-3 w-3" />
               <span>Created {formatDate(document.created_at)}</span>
+              {isAIGenerated && (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                  AI Generated
+                </span>
+              )}
             </div>
           </div>
         </div>
         
         <div className="flex items-center space-x-1">
+          {isAIGenerated && document.conversation_id && onContinueChat && (
+            <button
+              onClick={() => onContinueChat(document.conversation_id!)}
+              className="p-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
+              title="Continue chat"
+            >
+              <MessageSquare className="h-4 w-4" />
+            </button>
+          )}
+          {onViewVersions && (
+            <button
+              onClick={() => onViewVersions(document.id!)}
+              className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+              title="View version history"
+            >
+              <History className="h-4 w-4" />
+            </button>
+          )}
           <button
             onClick={() => onEdit(document)}
             className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"

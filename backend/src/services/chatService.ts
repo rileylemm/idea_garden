@@ -568,6 +568,38 @@ INSTRUCTIONS:
     return conversationId;
   }
 
+  async createAIGeneratedDocument(ideaId: number, title: string, content: string, conversationId: string): Promise<any> {
+    // Import the DocumentService to create the document
+    const { DocumentService } = await import('./documentService');
+    const documentService = new DocumentService();
+    
+    const documentData = {
+      title,
+      content,
+      document_type: 'ai_generated' as const,
+      conversation_id: conversationId
+    };
+    
+    const document = await documentService.createDocument(ideaId, documentData);
+    console.log(`Created AI-generated document: ${document.id} for idea ${ideaId}`);
+    
+    // Create initial version for the document
+    if (document.id) {
+      try {
+        const { DocumentVersionService } = await import('./documentVersionService');
+        const versionService = new DocumentVersionService();
+        
+        await versionService.createInitialVersion(document.id, content, 'ai');
+        console.log(`Created initial version for document: ${document.id}`);
+      } catch (error) {
+        console.error('Failed to create initial document version:', error);
+        // Don't fail the document creation if versioning fails
+      }
+    }
+    
+    return document;
+  }
+
   async loadConversation(ideaId: number): Promise<{ messages: ChatMessage[], generatedDocument: string } | null> {
     // For now, we'll return null (no saved conversation)
     // In a real implementation, this would load from a database

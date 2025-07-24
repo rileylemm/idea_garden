@@ -37,7 +37,7 @@ export const IdeaDetail: React.FC = () => {
         try {
           const fetchedDocuments = await apiService.getDocumentsByIdeaId(parseInt(id))
           setDocuments(fetchedDocuments)
-        } catch (err) {
+        } catch {
           console.log('No documents found for this idea')
         }
       } catch (err) {
@@ -233,7 +233,15 @@ export const IdeaDetail: React.FC = () => {
       {/* Documents Section */}
       {showDocuments && idea.id && (
         <div className="mt-8">
-          <DocumentsSection ideaId={idea.id} />
+          <DocumentsSection 
+            ideaId={idea.id} 
+            onContinueChat={(conversationId) => {
+              // Open the project overview chat with the conversation
+              setShowProjectOverview(true);
+              // TODO: Load the conversation in the chat using conversationId
+              console.log('Continue chat with conversation:', conversationId);
+            }}
+          />
         </div>
       )}
 
@@ -298,6 +306,7 @@ export const IdeaDetail: React.FC = () => {
             console.error('Failed to save project overview:', error);
           }
         }}
+        conversationId={undefined} // TODO: Pass conversationId when continuing chat
       />
     </div>
   )

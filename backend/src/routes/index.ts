@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { IdeaController } from '../controllers/ideaController';
 import { DocumentController } from '../controllers/documentController';
 import { ActionPlanController } from '../controllers/actionPlanController';
+import { DocumentVersionController } from '../controllers/documentVersionController';
 import chatRoutes from './chatRoutes';
 
 const router = Router();
@@ -33,6 +34,10 @@ router.get('/ideas/:ideaId/documents/:documentId', DocumentController.getDocumen
 router.post('/ideas/:ideaId/documents', DocumentController.createDocument);
 router.put('/ideas/:ideaId/documents/:documentId', DocumentController.updateDocument);
 router.delete('/ideas/:ideaId/documents/:documentId', DocumentController.deleteDocument);
+
+// Document versioning routes
+router.get('/documents/:documentId/versions', DocumentVersionController.getDocumentVersions);
+router.get('/documents/:documentId/versions/:versionNumber', DocumentVersionController.getDocumentVersion);
 
 // Action Plan routes
 router.get('/ideas/:ideaId/action-plan', ActionPlanController.getActionPlan);

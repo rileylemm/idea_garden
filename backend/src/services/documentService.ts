@@ -5,7 +5,7 @@ export class DocumentService {
   // Get all documents for an idea
   async getDocumentsByIdeaId(ideaId: number): Promise<Document[]> {
     const sql = `
-      SELECT id, idea_id, title, content, created_at, updated_at
+      SELECT id, idea_id, title, content, document_type, conversation_id, created_at, updated_at
       FROM documents 
       WHERE idea_id = ?
       ORDER BY created_at DESC
@@ -18,7 +18,7 @@ export class DocumentService {
   // Get a specific document
   async getDocumentById(ideaId: number, documentId: number): Promise<Document | null> {
     const sql = `
-      SELECT id, idea_id, title, content, created_at, updated_at
+      SELECT id, idea_id, title, content, document_type, conversation_id, created_at, updated_at
       FROM documents 
       WHERE id = ? AND idea_id = ?
     `;
@@ -30,14 +30,16 @@ export class DocumentService {
   // Create a new document
   async createDocument(ideaId: number, documentData: CreateDocumentRequest): Promise<Document> {
     const sql = `
-      INSERT INTO documents (idea_id, title, content)
-      VALUES (?, ?, ?)
+      INSERT INTO documents (idea_id, title, content, document_type, conversation_id)
+      VALUES (?, ?, ?, ?, ?)
     `;
     
     const result = await runSingleQuery(sql, [
       ideaId,
       documentData.title,
-      documentData.content || ''
+      documentData.content || '',
+      documentData.document_type || 'uploaded',
+      documentData.conversation_id || null
     ]);
     
     // Get the created document
@@ -78,6 +80,24 @@ export class DocumentService {
     `;
     
     await runSingleQuery(sql, params);
+    
+    // If content was updated, create a new version
+    if (documentData.content !== undefined) {
+      try {
+        const { DocumentVersionService } = await import('./documentVersionService');
+        const versionService = new DocumentVersionService();
+        
+        // Create a new version with the updated content
+        await versionService.createDocumentVersion({
+          document_id: documentId,
+          content: documentData.content,
+          created_by: 'user'
+        });
+      } catch (error) {
+        console.error('Failed to create document version:', error);
+        // Don't fail the update if versioning fails
+      }
+    }
     
     // Get the updated document
     const updatedDocument = await this.getDocumentById(ideaId, documentId);
