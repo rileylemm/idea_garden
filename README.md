@@ -16,6 +16,9 @@ A personal tool to capture, evolve, and connect your ideas — helping seedlings
 - **⚡ Quick Capture**: Global shortcut (`Cmd/Ctrl + Shift + I`) for instant idea capture
 - **🌐 System-wide Access**: Capture ideas from anywhere without interrupting your workflow
 - **🎯 Floating Modal**: Beautiful floating window that appears above all applications
+- **📄 Document Management**: Upload and manage `.md` research documents for each idea
+- **🎯 AI Action Planning**: Generate detailed, specific action plans using AI analysis of your research
+- **✏️ Idea Editing**: Edit idea details including title, description, category, and tags
 
 ## Tech Stack
 
@@ -45,6 +48,8 @@ A personal tool to capture, evolve, and connect your ideas — helping seedlings
 - **Categories**: Predefined categories (Technology, Business, Creative, etc.)
 - **Relationships**: Many-to-many idea-tag relationships
 - **Embeddings**: Vector embeddings for semantic similarity search
+- **Documents**: Research documents linked to ideas for reference and AI analysis
+- **Action Plans**: AI-generated action plans with detailed tasks and timelines
 
 ## Repository Structure
 
@@ -139,6 +144,8 @@ The SQLite database is automatically created when you first run the backend. The
 - `tags` table for tag management  
 - `idea_tags` table for many-to-many relationships
 - `embeddings` table for semantic similarity search
+- `documents` table for research documents linked to ideas
+- `action_plans` table for AI-generated action plans
 
 ## API Endpoints
 
@@ -154,6 +161,18 @@ The SQLite database is automatically created when you first run the backend. The
 ### Categories & Tags
 - `GET /api/categories` - Get all categories
 - `GET /api/tags` - Get all tags
+
+### Documents
+- `GET /api/ideas/:id/documents` - Get documents for an idea
+- `POST /api/ideas/:id/documents` - Create new document for an idea
+- `PUT /api/ideas/:id/documents/:docId` - Update document
+- `DELETE /api/ideas/:id/documents/:docId` - Delete document
+
+### Action Plans
+- `GET /api/ideas/:id/action-plan` - Get action plan for an idea
+- `POST /api/ideas/:id/action-plans` - Create new action plan
+- `PUT /api/ideas/:id/action-plans/:planId` - Update action plan
+- `DELETE /api/ideas/:id/action-plans/:planId` - Delete action plan
 
 ### Embeddings
 - `POST /api/embeddings/update-all` - Update embeddings for all ideas
@@ -177,6 +196,9 @@ The SQLite database is automatically created when you first run the backend. The
 ✅ **Quick Capture**: Global shortcut for instant idea capture from anywhere  
 ✅ **Floating Modal**: System-wide floating window that doesn't interrupt workflow  
 ✅ **Focus Management**: Smart window management that doesn't steal focus  
+✅ **Document Management**: Upload and manage `.md` research documents for ideas
+✅ **AI Action Planning**: Generate detailed action plans using research analysis
+✅ **Idea Editing**: Full CRUD operations for idea details and tags  
 
 ## Development Workflow
 

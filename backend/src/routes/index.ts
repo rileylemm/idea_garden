@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { IdeaController } from '../controllers/ideaController';
 import { DocumentController } from '../controllers/documentController';
+import { ActionPlanController } from '../controllers/actionPlanController';
 
 const router = Router();
 
@@ -31,5 +32,12 @@ router.get('/ideas/:ideaId/documents/:documentId', DocumentController.getDocumen
 router.post('/ideas/:ideaId/documents', DocumentController.createDocument);
 router.put('/ideas/:ideaId/documents/:documentId', DocumentController.updateDocument);
 router.delete('/ideas/:ideaId/documents/:documentId', DocumentController.deleteDocument);
+
+// Action Plan routes
+router.get('/ideas/:ideaId/action-plan', ActionPlanController.getActionPlan);
+router.get('/ideas/:ideaId/action-plans/:actionPlanId', ActionPlanController.getActionPlanById);
+router.post('/ideas/:ideaId/action-plans', ActionPlanController.createActionPlan);
+router.put('/ideas/:ideaId/action-plans/:actionPlanId', ActionPlanController.updateActionPlan);
+router.delete('/ideas/:ideaId/action-plans/:actionPlanId', ActionPlanController.deleteActionPlan);
 
 export default router;

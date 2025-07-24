@@ -65,6 +65,40 @@ export interface UpdateDocumentRequest {
   content?: string;
 }
 
+export interface ActionPlan {
+  id?: number;
+  idea_id: number;
+  title: string;
+  content: string;
+  timeline: string;
+  vision: string;
+  resources: string;
+  constraints: string;
+  priority: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreateActionPlanRequest {
+  title: string;
+  content: string;
+  timeline: string;
+  vision: string;
+  resources: string;
+  constraints: string;
+  priority: number;
+}
+
+export interface UpdateActionPlanRequest {
+  title?: string;
+  content?: string;
+  timeline?: string;
+  vision?: string;
+  resources?: string;
+  constraints?: string;
+  priority?: number;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -251,6 +285,59 @@ class ApiService {
     
     if (!response.success) {
       throw new Error(response.error || 'Failed to delete document');
+    }
+  }
+
+  // Action Plans
+  async getActionPlanByIdeaId(ideaId: number): Promise<ActionPlan | null> {
+    const response = await this.request<ActionPlan>(`/ideas/${ideaId}/action-plan`);
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    return null; // No action plan exists yet
+  }
+
+  async getActionPlanById(ideaId: number, actionPlanId: number): Promise<ActionPlan> {
+    const response = await this.request<ActionPlan>(`/ideas/${ideaId}/action-plans/${actionPlanId}`);
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.error || 'Failed to fetch action plan');
+  }
+
+  async createActionPlan(ideaId: number, actionPlanData: CreateActionPlanRequest): Promise<ActionPlan> {
+    const response = await this.request<ActionPlan>(`/ideas/${ideaId}/action-plans`, {
+      method: 'POST',
+      body: JSON.stringify(actionPlanData),
+    });
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.error || 'Failed to create action plan');
+  }
+
+  async updateActionPlan(ideaId: number, actionPlanId: number, actionPlanData: UpdateActionPlanRequest): Promise<ActionPlan> {
+    const response = await this.request<ActionPlan>(`/ideas/${ideaId}/action-plans/${actionPlanId}`, {
+      method: 'PUT',
+      body: JSON.stringify(actionPlanData),
+    });
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.error || 'Failed to update action plan');
+  }
+
+  async deleteActionPlan(ideaId: number, actionPlanId: number): Promise<void> {
+    const response = await this.request<void>(`/ideas/${ideaId}/action-plans/${actionPlanId}`, {
+      method: 'DELETE',
+    });
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to delete action plan');
     }
   }
 }

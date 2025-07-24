@@ -8,6 +8,8 @@ import { apiService, type Idea } from "../services/api"
 import { getPlantTheme, getStageIcon } from "../utils/themeUtils"
 import { RelatedIdeas } from "../components/RelatedIdeas"
 import { DocumentsSection } from "../components/DocumentsSection"
+import { ActionPlanSection } from "../components/ActionPlanSection"
+import { EditIdeaModal } from "../components/EditIdeaModal"
 
 export const IdeaDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -16,6 +18,8 @@ export const IdeaDetail: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showDocuments, setShowDocuments] = useState(false)
+  const [showActionPlan, setShowActionPlan] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   useEffect(() => {
     const fetchIdea = async () => {
@@ -115,7 +119,11 @@ export const IdeaDetail: React.FC = () => {
 
             {/* Action Buttons */}
             <div className="flex items-center space-x-2 ml-6">
-              <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+              <button 
+                onClick={() => setShowEditModal(true)}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Edit idea"
+              >
                 <Edit className="h-5 w-5" />
               </button>
               <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
@@ -190,10 +198,15 @@ export const IdeaDetail: React.FC = () => {
             <h4 className="font-medium text-gray-900 mb-1">Connect Ideas</h4>
             <p className="text-sm text-gray-600">Link to related concepts</p>
           </button>
-          <button className="p-4 bg-white rounded-lg border border-green-200 hover:border-green-300 transition-colors text-left">
+          <button 
+            onClick={() => setShowActionPlan(!showActionPlan)}
+            className="p-4 bg-white rounded-lg border border-green-200 hover:border-green-300 transition-colors text-left"
+          >
             <div className="text-2xl mb-2">📝</div>
             <h4 className="font-medium text-gray-900 mb-1">Take Action</h4>
-            <p className="text-sm text-gray-600">Create an action plan</p>
+            <p className="text-sm text-gray-600">
+              {showActionPlan ? 'Hide action plan' : 'Create an AI-powered action plan'}
+            </p>
           </button>
         </div>
       </div>
@@ -202,6 +215,19 @@ export const IdeaDetail: React.FC = () => {
       {showDocuments && idea.id && (
         <div className="mt-8">
           <DocumentsSection ideaId={idea.id} />
+        </div>
+      )}
+
+      {/* Action Plan Section */}
+      {showActionPlan && idea.id && (
+        <div className="mt-8">
+          <ActionPlanSection 
+            ideaId={idea.id}
+            ideaTitle={idea.title}
+            ideaDescription={idea.description}
+            ideaCategory={idea.category}
+            ideaContent={idea.content}
+          />
         </div>
       )}
 
@@ -221,6 +247,17 @@ export const IdeaDetail: React.FC = () => {
           <RelatedIdeas ideaId={idea.id} limit={5} />
         </div>
       )}
+
+      {/* Edit Modal */}
+      <EditIdeaModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onSave={(updatedIdea) => {
+          setIdea(updatedIdea);
+          setShowEditModal(false);
+        }}
+        idea={idea}
+      />
     </div>
   )
 }

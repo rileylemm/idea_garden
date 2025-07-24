@@ -70,6 +70,24 @@ export const initializeDatabase = () => {
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (idea_id) REFERENCES ideas(id) ON DELETE CASCADE
         )
+      `);
+
+      // Create action_plans table for AI-generated action plans
+      db.run(`
+        CREATE TABLE IF NOT EXISTS action_plans (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          idea_id INTEGER NOT NULL,
+          title TEXT NOT NULL,
+          content TEXT NOT NULL,
+          timeline TEXT NOT NULL,
+          vision TEXT NOT NULL,
+          resources TEXT NOT NULL,
+          constraints TEXT NOT NULL,
+          priority INTEGER NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (idea_id) REFERENCES ideas(id) ON DELETE CASCADE
+        )
       `, (err) => {
         if (err) {
           console.error('Error creating tables:', err);

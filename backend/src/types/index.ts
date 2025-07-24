@@ -59,6 +59,40 @@ export interface UpdateDocumentRequest {
   content?: string;
 }
 
+export interface ActionPlan {
+  id?: number;
+  idea_id: number;
+  title: string;
+  content: string;
+  timeline: string;
+  vision: string;
+  resources: string;
+  constraints: string;
+  priority: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreateActionPlanRequest {
+  title: string;
+  content: string;
+  timeline: string;
+  vision: string;
+  resources: string;
+  constraints: string;
+  priority: number;
+}
+
+export interface UpdateActionPlanRequest {
+  title?: string;
+  content?: string;
+  timeline?: string;
+  vision?: string;
+  resources?: string;
+  constraints?: string;
+  priority?: number;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
