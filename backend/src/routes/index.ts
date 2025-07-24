@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { IdeaController } from '../controllers/ideaController';
 import { DocumentController } from '../controllers/documentController';
 import { ActionPlanController } from '../controllers/actionPlanController';
+import chatRoutes from './chatRoutes';
 
 const router = Router();
 
@@ -39,5 +40,8 @@ router.get('/ideas/:ideaId/action-plans/:actionPlanId', ActionPlanController.get
 router.post('/ideas/:ideaId/action-plans', ActionPlanController.createActionPlan);
 router.put('/ideas/:ideaId/action-plans/:actionPlanId', ActionPlanController.updateActionPlan);
 router.delete('/ideas/:ideaId/action-plans/:actionPlanId', ActionPlanController.deleteActionPlan);
+
+// Chat routes
+router.use('/chat', chatRoutes);
 
 export default router;

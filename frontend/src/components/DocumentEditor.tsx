@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Save, FileText, Upload, File } from 'lucide-react';
+import { X, Save, FileText, Upload } from 'lucide-react';
 import { Document, CreateDocumentRequest, UpdateDocumentRequest } from '../services/api';
 
 interface DocumentEditorProps {

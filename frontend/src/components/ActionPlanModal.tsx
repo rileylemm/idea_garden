@@ -18,11 +18,11 @@ export const ActionPlanModal: React.FC<ActionPlanModalProps> = ({
   isOpen,
   onClose,
   onSave,
-  ideaId,
+  // ideaId, // Unused parameter
   ideaTitle,
-  ideaDescription,
-  ideaCategory,
-  ideaContent,
+  // ideaDescription,
+  // ideaCategory,
+  // ideaContent,
   documents = []
 }) => {
   const [step, setStep] = useState<'questions' | 'generating' | 'review'>('questions');
@@ -78,14 +78,14 @@ export const ActionPlanModal: React.FC<ActionPlanModalProps> = ({
     setStep('generating');
 
     try {
-      // Construct the AI prompt
-      const prompt = constructAIPrompt();
+      // Construct the AI prompt (unused for now)
+      // const prompt = constructAIPrompt();
       
       // For now, we'll create a basic action plan structure
       // In a real implementation, this would call an AI service
       const actionPlan: CreateActionPlanRequest = {
         title: `Action Plan for ${ideaTitle}`,
-        content: await generateActionPlan(prompt),
+        content: await generateActionPlan(),
         timeline: formData.timeline,
         vision: formData.vision,
         resources: formData.resources,
@@ -103,49 +103,49 @@ export const ActionPlanModal: React.FC<ActionPlanModalProps> = ({
     }
   };
 
-  const constructAIPrompt = () => {
-    const documentsContent = documents
-      .map(doc => `${doc.title}:\n${doc.content || ''}`)
-      .join('\n\n');
+  // const constructAIPrompt = () => {
+  //   const documentsContent = documents
+  //     .map(doc => `${doc.title}:\n${doc.content || ''}`)
+  //     .join('\n\n');
 
-    return `Create a highly specific and actionable plan for this idea. DO NOT generate generic business advice. Instead, analyze the research documents and create tasks that directly relate to the specific features, technical requirements, and business model described.
+  //   return `Create a highly specific and actionable plan for this idea. DO NOT generate generic business advice. Instead, analyze the research documents and create tasks that directly relate to the specific features, technical requirements, and business model described.
 
-IDEA: ${ideaTitle}
-DESCRIPTION: ${ideaDescription || 'No description provided'}
-CATEGORY: ${ideaCategory || 'General'}
-CONTENT: ${ideaContent || 'No additional content'}
+  // IDEA: ${ideaTitle}
+  // DESCRIPTION: ${ideaDescription || 'No description provided'}
+  // CATEGORY: ${ideaCategory || 'General'}
+  // CONTENT: ${ideaContent || 'No additional content'}
 
-RESEARCH DOCUMENTS:
-${documentsContent || 'No research documents available'}
+  // RESEARCH DOCUMENTS:
+  // ${documentsContent || 'No research documents available'}
 
-USER GOALS:
-- Timeline: ${formData.timeline}
-- Vision: ${formData.vision}
-- Resources: ${formData.resources || 'Not specified'}
-- Constraints: ${formData.constraints || 'None mentioned'}
-- Priority: ${formData.priority}/10
+  // USER GOALS:
+  // - Timeline: ${formData.timeline}
+  // - Vision: ${formData.vision}
+  // - Resources: ${formData.resources || 'Not specified'}
+  // - Constraints: ${formData.constraints || 'None mentioned'}
+  // - Priority: ${formData.priority}/10
 
-CRITICAL REQUIREMENTS:
-1. Analyze the research documents thoroughly and extract specific features, technical requirements, and business details
-2. Create tasks that directly implement the features described in the research
-3. Include specific technical tasks (e.g., "Implement geolocation API for flower tagging", "Build flower identification AI integration")
-4. Reference specific features from the research (e.g., "Create Flowerdex collection system", "Build bouquet creation interface")
-5. Include business development tasks based on the monetization strategy described
-6. Address the specific constraints mentioned by the user
-7. Create measurable milestones that align with the timeline
+  // CRITICAL REQUIREMENTS:
+  // 1. Analyze the research documents thoroughly and extract specific features, technical requirements, and business details
+  // 2. Create tasks that directly implement the features described in the research
+  // 3. Include specific technical tasks (e.g., "Implement geolocation API for flower tagging", "Build flower identification AI integration")
+  // 4. Reference specific features from the research (e.g., "Create Flowerdex collection system", "Build bouquet creation interface")
+  // 5. Include business development tasks based on the monetization strategy described
+  // 6. Address the specific constraints mentioned by the user
+  // 7. Create measurable milestones that align with the timeline
 
-Please create a detailed, step-by-step action plan with:
-1. SPECIFIC technical implementation tasks based on the research
-2. Feature development tasks that directly relate to the documented features
-3. Business development tasks based on the monetization strategy
-4. User research and validation tasks
-5. Technical architecture and infrastructure tasks
-6. Marketing and launch preparation tasks
+  // Please create a detailed, step-by-step action plan with:
+  // 1. SPECIFIC technical implementation tasks based on the research
+  // 2. Feature development tasks that directly relate to the documented features
+  // 3. Business development tasks based on the monetization strategy
+  // 4. User research and validation tasks
+  // 5. Technical architecture and infrastructure tasks
+  // 6. Marketing and launch preparation tasks
 
-Format as a structured checklist with clear priorities. Each task should be specific enough that someone could execute it immediately.`;
-  };
+  // Format as a structured checklist with clear priorities. Each task should be specific enough that someone could execute it immediately.`;
+  // };
 
-  const generateActionPlan = async (prompt: string): Promise<string> => {
+  const generateActionPlan = async (): Promise<string> => {
     // Simulate AI generation with a structured response
     // In a real implementation, this would call OpenAI or another AI service
     await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call

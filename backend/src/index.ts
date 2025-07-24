@@ -4,8 +4,8 @@ import cors from 'cors';
 import routes from './routes';
 import { initializeDatabase } from './database';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables from .env file, overriding system variables
+dotenv.config({ override: true });
 
 const app = express();
 

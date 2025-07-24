@@ -4,12 +4,13 @@ import type React from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { ArrowLeft, Calendar, Tag, Edit, Share2 } from "lucide-react"
 import { useState, useEffect } from "react"
-import { apiService, type Idea } from "../services/api"
+import { apiService, type Idea, type Document } from "../services/api"
 import { getPlantTheme, getStageIcon } from "../utils/themeUtils"
 import { RelatedIdeas } from "../components/RelatedIdeas"
 import { DocumentsSection } from "../components/DocumentsSection"
 import { ActionPlanSection } from "../components/ActionPlanSection"
 import { EditIdeaModal } from "../components/EditIdeaModal"
+import { ProjectOverviewChat } from "../components/ProjectOverviewChat"
 
 export const IdeaDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -20,6 +21,8 @@ export const IdeaDetail: React.FC = () => {
   const [showDocuments, setShowDocuments] = useState(false)
   const [showActionPlan, setShowActionPlan] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showProjectOverview, setShowProjectOverview] = useState(false)
+  const [documents, setDocuments] = useState<Document[]>([])
 
   useEffect(() => {
     const fetchIdea = async () => {
@@ -29,6 +32,14 @@ export const IdeaDetail: React.FC = () => {
         setLoading(true)
         const fetchedIdea = await apiService.getIdeaById(parseInt(id))
         setIdea(fetchedIdea)
+        
+        // Fetch documents for the idea
+        try {
+          const fetchedDocuments = await apiService.getDocumentsByIdeaId(parseInt(id))
+          setDocuments(fetchedDocuments)
+        } catch (err) {
+          console.log('No documents found for this idea')
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch idea')
       } finally {
@@ -199,6 +210,14 @@ export const IdeaDetail: React.FC = () => {
             <p className="text-sm text-gray-600">Link to related concepts</p>
           </button>
           <button 
+            onClick={() => setShowProjectOverview(true)}
+            className="p-4 bg-white rounded-lg border border-green-200 hover:border-green-300 transition-colors text-left"
+          >
+            <div className="text-2xl mb-2">📋</div>
+            <h4 className="font-medium text-gray-900 mb-1">Generate Overview</h4>
+            <p className="text-sm text-gray-600">Create project overview through AI chat</p>
+          </button>
+          <button 
             onClick={() => setShowActionPlan(!showActionPlan)}
             className="p-4 bg-white rounded-lg border border-green-200 hover:border-green-300 transition-colors text-left"
           >
@@ -257,6 +276,28 @@ export const IdeaDetail: React.FC = () => {
           setShowEditModal(false);
         }}
         idea={idea}
+      />
+
+      {/* Project Overview Chat */}
+      <ProjectOverviewChat
+        isOpen={showProjectOverview}
+        onClose={() => setShowProjectOverview(false)}
+        idea={idea}
+        documents={documents}
+        onGenerateDocument={async (content, title) => {
+          try {
+            await apiService.createDocument(idea.id!, {
+              title,
+              content
+            });
+            // Refresh documents
+            const updatedDocuments = await apiService.getDocumentsByIdeaId(idea.id!);
+            setDocuments(updatedDocuments);
+            setShowProjectOverview(false);
+          } catch (error) {
+            console.error('Failed to save project overview:', error);
+          }
+        }}
       />
     </div>
   )
