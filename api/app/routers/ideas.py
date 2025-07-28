@@ -4,6 +4,7 @@ from typing import List, Optional
 from app.database import get_db
 from app.schemas.idea import Idea, IdeaCreate, IdeaUpdate, IdeaResponse, IdeasResponse, SearchQuery, RelatedIdea, RelatedIdeasResponse
 from app.models.idea import Idea as IdeaModel, Tag as TagModel
+from app.services.embedding_service import embedding_service
 from datetime import datetime
 
 router = APIRouter()
@@ -75,6 +76,13 @@ async def create_idea(idea: IdeaCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_idea)
     
+    # Generate embedding for the new idea
+    try:
+        embedding_service.update_idea_embedding(db, db_idea)
+    except Exception as e:
+        # Log error but don't fail the request
+        print(f"Warning: Failed to generate embedding for idea {db_idea.id}: {e}")
+    
     return IdeaResponse(
         success=True, 
         data=db_idea, 
@@ -109,6 +117,13 @@ async def update_idea(idea_id: int, idea_update: IdeaUpdate, db: Session = Depen
     db_idea.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(db_idea)
+    
+    # Update embedding for the modified idea
+    try:
+        embedding_service.update_idea_embedding(db, db_idea)
+    except Exception as e:
+        # Log error but don't fail the request
+        print(f"Warning: Failed to update embedding for idea {db_idea.id}: {e}")
     
     return IdeaResponse(
         success=True, 
@@ -160,30 +175,32 @@ async def delete_idea(idea_id: int, db: Session = Depends(get_db)):
 async def get_related_ideas(
     idea_id: int, 
     limit: int = Query(5, description="Number of related ideas to return"),
+    min_similarity: float = Query(0.3, description="Minimum similarity threshold (0.0-1.0)"),
     db: Session = Depends(get_db)
 ):
-    """Get AI-powered related ideas using semantic similarity"""
-    # For now, return ideas with similar categories
-    # TODO: Implement proper semantic similarity with embeddings
+    """Get AI-powered related ideas using semantic similarity with local embeddings"""
     idea = db.query(IdeaModel).filter(IdeaModel.id == idea_id).first()
     
     if not idea:
         raise HTTPException(status_code=404, detail="Idea not found")
     
-    related_ideas = db.query(IdeaModel).filter(
-        IdeaModel.category == idea.category,
-        IdeaModel.id != idea_id
-    ).limit(limit).all()
+    # Get similar ideas using embedding service
+    similar_ideas = embedding_service.get_similar_ideas(
+        db=db, 
+        idea_id=idea_id, 
+        limit=limit, 
+        min_similarity=min_similarity
+    )
     
     related_data = []
-    for related_idea in related_ideas:
+    for similar_idea in similar_ideas:
         related_data.append(RelatedIdea(
-            idea_id=related_idea.id,
-            similarity=0.8,  # Placeholder similarity score
-            title=related_idea.title,
-            description=related_idea.description,
-            category=related_idea.category,
-            status=related_idea.status
+            idea_id=similar_idea["idea_id"],
+            similarity=similar_idea["similarity"],
+            title=similar_idea["title"],
+            description=similar_idea["description"],
+            category=similar_idea["category"],
+            status=similar_idea["status"]
         ))
     
     return RelatedIdeasResponse(success=True, data=related_data) 

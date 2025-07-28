@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.idea import Idea as IdeaModel, Tag as TagModel
+from app.services.embedding_service import embedding_service
 from typing import List
 
 router = APIRouter()
@@ -33,15 +34,12 @@ async def get_tags(db: Session = Depends(get_db)):
 
 @router.post("/embeddings/update-all")
 async def update_all_embeddings(db: Session = Depends(get_db)):
-    """Update all embeddings"""
-    # TODO: Implement embedding update logic
-    # This would involve:
-    # 1. Getting all ideas
-    # 2. Generating embeddings for each idea
-    # 3. Storing embeddings in the database
-    
-    return {
-        "success": True,
-        "message": "Embedding update initiated",
-        "note": "This endpoint is a placeholder for future implementation"
-    } 
+    """Update all embeddings using local Ollama model"""
+    try:
+        result = embedding_service.update_all_embeddings(db)
+        return result
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Failed to update embeddings: {str(e)}"
+        } 

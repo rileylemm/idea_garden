@@ -8,6 +8,7 @@ import { apiService } from '../services/api';
 import { IdeaHeader } from '../components/IdeaHeader';
 import { GrowthProgress } from '../components/GrowthProgress';
 import { ResearchDocuments } from '../components/ResearchDocuments';
+import { RelatedIdeasCards } from '../components/RelatedIdeasCards';
 import { ActionSidebar } from '../components/ActionSidebar';
 
 const IdeaDetail: React.FC = () => {
@@ -227,6 +228,9 @@ const IdeaDetail: React.FC = () => {
             onUploadDocument={handleUploadDocument}
             onAddDocument={handleAddDocument}
           />
+
+          {/* Related Ideas Cards */}
+          <RelatedIdeasCards ideaId={idea.id!} limit={3} />
         </div>
 
         {/* Sidebar Actions */}
