@@ -43,13 +43,19 @@ async def root():
     }
 
 # Import and include routers
-from app.routers import ideas, documents, action_plans, chat, categories
+from app.routers import ideas, documents, action_plans, chat, categories, analytics, search, export, ai, workflows, system
 
 app.include_router(ideas.router, prefix="/api", tags=["ideas"])
 app.include_router(documents.router, prefix="/api", tags=["documents"])
 app.include_router(action_plans.router, prefix="/api", tags=["action-plans"])
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 app.include_router(categories.router, prefix="/api", tags=["categories"])
+app.include_router(analytics.router, prefix="/api/analytics", tags=["analytics"])
+app.include_router(search.router, prefix="/api/search", tags=["search"])
+app.include_router(export.router, prefix="/api/export", tags=["export"])
+app.include_router(ai.router, prefix="/api/ai", tags=["ai"])
+app.include_router(workflows.router, prefix="/api/workflows", tags=["workflows"])
+app.include_router(system.router, prefix="/api/system", tags=["system"])
 
 if __name__ == "__main__":
     import uvicorn
