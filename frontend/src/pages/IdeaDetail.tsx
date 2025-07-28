@@ -145,7 +145,7 @@ const IdeaDetail: React.FC = () => {
     setDeleting(true);
     try {
       await apiService.deleteIdea(idea.id!);
-      navigate('/');
+      navigate('/ideas');
     } catch (error) {
       console.error('Error deleting idea:', error);
       alert('Failed to delete idea. Please try again.');
