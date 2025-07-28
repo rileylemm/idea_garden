@@ -40,7 +40,7 @@ A personal tool to capture, evolve, and connect your ideas — helping seedlings
 - **Lucide React** for consistent iconography
 
 ### Backend (Updated)
-- **Python 3.13** with FastAPI for high-performance API
+- **Python 3.12** with FastAPI for high-performance API
 - **SQLAlchemy 2.0** for database ORM
 - **Pydantic** for data validation and serialization
 - **SQLite** for lightweight, reliable data storage
@@ -94,10 +94,22 @@ idea_garden/
 ## Getting Started
 
 ### Prerequisites
-- Python 3.13+
+- Python 3.12+ (required for SQLAlchemy compatibility)
 - Node.js 18+ 
 - npm or yarn
 - OpenAI API key (for related ideas feature)
+
+### Quick Setup
+
+We provide a convenient setup script to get the API backend running quickly:
+
+```bash
+# Setup API backend (Python 3.12 + dependencies)
+cd api
+./setup.sh
+```
+
+**Note**: The API requires Python 3.12 specifically due to SQLAlchemy compatibility issues with Python 3.13.
 
 ### Environment Setup
 
@@ -124,18 +136,20 @@ idea_garden/
 ```bash
 cd api
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Create Python 3.12 virtual environment
+python3.12 -m venv venv_py312
+source venv_py312/bin/activate  # On Windows: venv_py312\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
 
 # Run development server
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+python main.py
 ```
 
-The API will be available at `http://localhost:8000`
+The API will be available at `http://localhost:4000`
+
+**Note**: We use Python 3.12 specifically due to SQLAlchemy compatibility issues with Python 3.13.
 
 ### Frontend Development
 

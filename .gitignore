@@ -19,6 +19,7 @@ backend/dist/
 
 # API (New Python Backend)
 api/venv/
+api/venv_py312/
 api/__pycache__/
 api/*.pyc
 api/*.pyo

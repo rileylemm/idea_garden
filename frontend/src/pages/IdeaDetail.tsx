@@ -1,8 +1,8 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Edit, Share2 } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Edit, Share2, Trash2 } from 'lucide-react';
 import { Idea, Document } from '../services/api';
 import { apiService } from '../services/api';
 import { IdeaHeader } from '../components/IdeaHeader';
@@ -12,9 +12,11 @@ import { ActionSidebar } from '../components/ActionSidebar';
 
 const IdeaDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [idea, setIdea] = useState<Idea | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const fetchIdea = async () => {
@@ -134,6 +136,24 @@ const IdeaDetail: React.FC = () => {
     // Handle adding new document
   };
 
+  const handleDeleteIdea = async () => {
+    if (!idea || deleting) return;
+    
+    const confirmed = window.confirm('Are you sure you want to delete this idea? This action cannot be undone.');
+    if (!confirmed) return;
+    
+    setDeleting(true);
+    try {
+      await apiService.deleteIdea(idea.id!);
+      navigate('/');
+    } catch (error) {
+      console.error('Error deleting idea:', error);
+      alert('Failed to delete idea. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -176,6 +196,14 @@ const IdeaDetail: React.FC = () => {
             </button>
             <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg">
               <Share2 className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={handleDeleteIdea}
+              disabled={deleting}
+              className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Delete idea"
+            >
+              <Trash2 className="w-4 h-4" />
             </button>
           </div>
         </div>
