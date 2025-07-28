@@ -13,6 +13,7 @@ export const IdeasList: React.FC = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [filterCategory, setFilterCategory] = useState<string>("all")
   const [filterStatus, setFilterStatus] = useState<string>("all")
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   useEffect(() => {
     const fetchIdeas = async () => {
@@ -40,6 +41,23 @@ export const IdeasList: React.FC = () => {
 
   const categories = ["all", "technology", "business", "creative", "personal", "research", "innovation"]
   const stages = ["all", "seedling", "growing", "mature"]
+
+  const handleDeleteIdea = async (ideaId: number) => {
+    if (!window.confirm('Are you sure you want to delete this idea? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setDeletingId(ideaId);
+      await apiService.deleteIdea(ideaId);
+      setIdeas(ideas.filter(idea => idea.id !== ideaId));
+    } catch (error) {
+      console.error('Error deleting idea:', error);
+      alert('Failed to delete idea. Please try again.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -153,7 +171,11 @@ export const IdeasList: React.FC = () => {
           className={`grid gap-6 ${viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}
         >
           {filteredIdeas.map((idea) => (
-            <IdeaCard key={idea.id} idea={idea} />
+            <IdeaCard 
+              key={idea.id} 
+              idea={idea} 
+              onDelete={deletingId === idea.id ? undefined : handleDeleteIdea}
+            />
           ))}
         </div>
       )}

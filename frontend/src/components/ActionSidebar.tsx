@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lightbulb, Link as LinkIcon, FileText, Zap, Check, TrendingUp, Sprout } from 'lucide-react';
+import { Lightbulb, Link as LinkIcon, FileText, Zap, Check, TrendingUp, Sprout, Tag, Edit, Search } from 'lucide-react';
 import { Idea } from '../services/api';
 import { cardStyles } from '../utils/designSystem';
 
@@ -84,6 +84,51 @@ export const ActionSidebar: React.FC<ActionSidebarProps> = ({ idea, onAction }) 
               <div>
                 <h4 className="font-medium text-gray-900">Take Action</h4>
                 <p className="text-sm text-gray-600">Create AI-powered action plan</p>
+              </div>
+            </div>
+          </button>
+
+          <button 
+            onClick={() => onAction('suggest-tags')}
+            className={`${cardStyles.interactive} p-4 w-full text-left`}
+          >
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-indigo-100 rounded-lg">
+                <Tag className="w-5 h-5 text-indigo-600" />
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-900">Suggest Tags</h4>
+                <p className="text-sm text-gray-600">AI-powered tag suggestions</p>
+              </div>
+            </div>
+          </button>
+
+          <button 
+            onClick={() => onAction('improve-content')}
+            className={`${cardStyles.interactive} p-4 w-full text-left`}
+          >
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-teal-100 rounded-lg">
+                <Edit className="w-5 h-5 text-teal-600" />
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-900">Improve Content</h4>
+                <p className="text-sm text-gray-600">AI content enhancement</p>
+              </div>
+            </div>
+          </button>
+
+          <button 
+            onClick={() => onAction('research-suggestions')}
+            className={`${cardStyles.interactive} p-4 w-full text-left`}
+          >
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-pink-100 rounded-lg">
+                <Search className="w-5 h-5 text-pink-600" />
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-900">Research Suggestions</h4>
+                <p className="text-sm text-gray-600">AI research guidance</p>
               </div>
             </div>
           </button>

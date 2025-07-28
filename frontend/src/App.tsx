@@ -6,6 +6,8 @@ import { IdeasList } from "./pages/IdeasList"
 import IdeaDetail from "./pages/IdeaDetail"
 import { CreateIdea } from "./pages/CreateIdea"
 import { SearchPage } from "./pages/SearchPage"
+import { AnalyticsPage } from "./pages/AnalyticsPage"
+import { SystemPage } from "./pages/SystemPage"
 import { QuickCaptureProvider } from "./contexts/QuickCaptureContext.tsx"
 import { QuickCaptureModal } from "./components/QuickCaptureModal"
 import { QuickCapturePage } from "./pages/QuickCapturePage"
@@ -22,6 +24,8 @@ function AppContent() {
           <Route path="/ideas/:id" element={<IdeaDetail />} />
           <Route path="/create" element={<CreateIdea />} />
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/system" element={<SystemPage />} />
           <Route path="/quick-capture" element={<QuickCapturePage />} />
         </Routes>
       <QuickCaptureModal />

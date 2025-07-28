@@ -88,10 +88,9 @@ class ActionPlan(Base):
 class Embedding(Base):
     __tablename__ = "embeddings"
     
-    id = Column(Integer, primary_key=True, index=True)
-    idea_id = Column(Integer, ForeignKey("ideas.id"), nullable=False)
-    embedding_data = Column(Text, nullable=False)  # JSON string of embedding vector
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    idea_id = Column(Integer, ForeignKey("ideas.id"), primary_key=True)
+    embedding = Column(Text, nullable=False)  # JSON string of embedding vector
+    updated_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships
     idea = relationship("Idea", back_populates="embeddings") 

@@ -1,21 +1,31 @@
 import type React from "react"
 import { Link } from "react-router-dom"
+import { Trash2 } from "lucide-react"
 import { navIcons, typography, cardStyles, getCategoryTheme, getStatusTheme } from "../utils/designSystem"
 import type { Idea } from "../services/api"
 
 interface IdeaCardProps {
   idea: Idea
+  onDelete?: (ideaId: number) => void
 }
 
 // Remove the old theme functions - we'll use the design system ones
 
-export const IdeaCard: React.FC<IdeaCardProps> = ({ idea }) => {
+export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, onDelete }) => {
   const categoryTheme = getCategoryTheme(idea.category)
   const statusTheme = getStatusTheme(idea.status)
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'Recently';
     return new Date(dateString).toLocaleDateString();
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onDelete && idea.id) {
+      onDelete(idea.id);
+    }
   };
 
   return (
@@ -38,6 +48,15 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea }) => {
             <span className={`text-xs font-medium px-2 py-1 rounded-full ${statusTheme.bgColor} ${statusTheme.color} capitalize`}>
               {idea.status}
             </span>
+            {onDelete && (
+              <button
+                onClick={handleDelete}
+                className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors opacity-0 group-hover:opacity-100"
+                title="Delete idea"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
 

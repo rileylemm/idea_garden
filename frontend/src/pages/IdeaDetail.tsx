@@ -37,9 +37,76 @@ const IdeaDetail: React.FC = () => {
     }
   }, [id]);
 
-  const handleAction = (action: string) => {
-    console.log('Action triggered:', action);
-    // Handle different actions
+  const handleAction = async (action: string) => {
+    if (!idea) return;
+
+    try {
+      switch (action) {
+        case 'research':
+          // This would typically open a document upload modal
+          console.log('Research action - would open document upload');
+          break;
+        
+        case 'connect':
+          // This would show related ideas
+          console.log('Connect action - would show related ideas');
+          break;
+        
+        case 'overview':
+          // Generate AI summary
+          try {
+            const summary = await apiService.generateSummary(idea.id!);
+            console.log('AI Summary generated:', summary);
+            // You could show this in a modal or update the UI
+          } catch (error) {
+            console.error('Error generating summary:', error);
+          }
+          break;
+        
+        case 'action':
+          // This would open the action plan modal
+          console.log('Action plan action - would open action plan modal');
+          break;
+        
+        case 'suggest-tags':
+          // Suggest tags using AI
+          try {
+            const tagSuggestions = await apiService.suggestTags(idea.id!);
+            console.log('Tag suggestions:', tagSuggestions);
+            // You could show this in a modal for user to accept/reject
+          } catch (error) {
+            console.error('Error suggesting tags:', error);
+          }
+          break;
+        
+        case 'improve-content':
+          // Improve content using AI
+          try {
+            const improvements = await apiService.improveContent(idea.id!);
+            console.log('Content improvements:', improvements);
+            // You could show this in a modal for user to accept/reject
+          } catch (error) {
+            console.error('Error improving content:', error);
+          }
+          break;
+        
+        case 'research-suggestions':
+          // Get research suggestions
+          try {
+            const suggestions = await apiService.getResearchSuggestions(idea.id!);
+            console.log('Research suggestions:', suggestions);
+            // You could show this in a modal or sidebar
+          } catch (error) {
+            console.error('Error getting research suggestions:', error);
+          }
+          break;
+        
+        default:
+          console.log('Unknown action:', action);
+      }
+    } catch (error) {
+      console.error('Error handling action:', error);
+    }
   };
 
   const handleViewDocument = (doc: Document) => {

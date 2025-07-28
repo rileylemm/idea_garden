@@ -1,5 +1,6 @@
 import type React from "react"
 import { Link, useLocation } from "react-router-dom"
+import { BarChart3, Settings } from "lucide-react"
 import { navIcons, typography } from "../utils/designSystem"
 
 export const Navbar: React.FC = () => {
@@ -14,6 +15,8 @@ export const Navbar: React.FC = () => {
     { path: "/ideas", icon: navIcons.ideas, label: "Ideas" },
     { path: "/create", icon: navIcons.create, label: "Plant" },
     { path: "/search", icon: navIcons.search, label: "Search" },
+    { path: "/analytics", icon: BarChart3, label: "Analytics" },
+    { path: "/system", icon: Settings, label: "System" },
   ]
 
   return (

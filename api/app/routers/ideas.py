@@ -118,16 +118,43 @@ async def update_idea(idea_id: int, idea_update: IdeaUpdate, db: Session = Depen
 
 @router.delete("/ideas/{idea_id}")
 async def delete_idea(idea_id: int, db: Session = Depends(get_db)):
-    """Delete an idea"""
+    """Delete an idea and all related data"""
     db_idea = db.query(IdeaModel).filter(IdeaModel.id == idea_id).first()
     
     if not db_idea:
         raise HTTPException(status_code=404, detail="Idea not found")
     
-    db.delete(db_idea)
-    db.commit()
-    
-    return {"success": True, "message": "Idea deleted successfully"}
+    try:
+        # Delete related documents first
+        from app.models.idea import Document
+        documents = db.query(Document).filter(Document.idea_id == idea_id).all()
+        for doc in documents:
+            db.delete(doc)
+        
+        # Delete related action plans
+        from app.models.idea import ActionPlan
+        action_plans = db.query(ActionPlan).filter(ActionPlan.idea_id == idea_id).all()
+        for plan in action_plans:
+            db.delete(plan)
+        
+        # Delete related embeddings
+        from app.models.idea import Embedding
+        embeddings = db.query(Embedding).filter(Embedding.idea_id == idea_id).all()
+        for embedding in embeddings:
+            db.delete(embedding)
+        
+        # Clear tags association (many-to-many relationship)
+        db_idea.tags.clear()
+        
+        # Finally delete the idea
+        db.delete(db_idea)
+        db.commit()
+        
+        return {"success": True, "message": "Idea deleted successfully"}
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to delete idea: {str(e)}")
 
 @router.get("/ideas/{idea_id}/related", response_model=RelatedIdeasResponse)
 async def get_related_ideas(
