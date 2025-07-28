@@ -29,6 +29,52 @@ A personal tool to capture, evolve, and connect your ideas — helping seedlings
 - **📈 Analytics**: Track usage patterns and growth insights
 - **🔄 Workflows**: Automated actions and periodic reviews
 - **📤 Export/Import**: Export ideas in multiple formats and import from JSON
+- **🤖 Project Overview Generation**: AI-powered conversational interface to create comprehensive project documents
+- **☁️ Dual AI Support**: Choose between OpenAI (cloud) and Ollama (local) models for AI features
+
+## AI Features
+
+### Project Overview Generation
+Create comprehensive project documents through an AI-powered conversational interface:
+
+- **💬 Conversational Flow**: Natural conversation to explore and develop ideas
+- **📄 Document Templates**: Category-specific templates (Technology, Business, Creative, General)
+- **🎨 Tone Customization**: Multiple tone options (Warm, Professional, Playful, Poetic, Analytical, Casual)
+- **📝 Markdown Preview**: Real-time preview with editing capabilities
+- **🔄 Version Control**: Document diff comparison for tracking changes
+
+### AI Provider Options
+- **OpenAI (Cloud)**: High-quality responses using GPT models (requires API key)
+- **Ollama (Local)**: Privacy-focused local models for offline use
+
+### Setup Instructions
+
+#### OpenAI Setup
+1. Get an OpenAI API key from [OpenAI Platform](https://platform.openai.com/)
+2. Set the environment variable:
+   ```bash
+   export OPENAI_API_KEY="your-api-key-here"
+   ```
+
+#### Ollama Setup
+1. Install Ollama from [ollama.ai](https://ollama.ai/)
+2. Start Ollama service:
+   ```bash
+   ollama serve
+   ```
+3. Pull desired models:
+   ```bash
+   ollama pull llama2
+   ollama pull mistral
+   ollama pull codellama
+   ```
+
+#### System Configuration
+Configure your preferred AI provider in the System page:
+1. Navigate to System → AI Settings
+2. Choose between "OpenAI (Cloud)" or "Ollama (Local)"
+3. Select your preferred model from the available options
+4. Save your preferences
 
 ## Tech Stack
 
@@ -45,6 +91,7 @@ A personal tool to capture, evolve, and connect your ideas — helping seedlings
 - **Pydantic** for data validation and serialization
 - **SQLite** for lightweight, reliable data storage
 - **OpenAI API** for semantic embeddings and AI features
+- **Ollama Integration** for local AI model support
 - **CORS** enabled for frontend-backend communication
 - **Pytest** for comprehensive testing (106 tests passing)
 
@@ -97,7 +144,8 @@ idea_garden/
 - Python 3.12+ (required for SQLAlchemy compatibility)
 - Node.js 18+ 
 - npm or yarn
-- OpenAI API key (for related ideas feature)
+- OpenAI API key (for cloud AI features)
+- Ollama (optional, for local AI features)
 
 ### Quick Setup
 

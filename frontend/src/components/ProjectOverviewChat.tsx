@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Download, FileText, MessageSquare, Loader2, Check, X } from 'lucide-react';
+import { Send, Download, FileText, MessageSquare, Loader2, Check, X, Settings } from 'lucide-react';
 import { Idea, Document } from '../services/api';
 
 interface DocumentDiffProps {
@@ -114,6 +114,10 @@ export const ProjectOverviewChat: React.FC<ProjectOverviewChatProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [showDiff, setShowDiff] = useState(false);
   const [previousDocument, setPreviousDocument] = useState<string>('');
+  const [modelProvider, setModelProvider] = useState<string>('openai');
+  const [modelName, setModelName] = useState<string>('gpt-3.5-turbo');
+  const [availableModels, setAvailableModels] = useState<{[key: string]: string[]}>({});
+  const [showModelSettings, setShowModelSettings] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -137,6 +141,23 @@ export const ProjectOverviewChat: React.FC<ProjectOverviewChatProps> = ({
       console.log('Loading conversation:', conversationId);
     }
   }, [conversationId, isOpen]);
+
+  // Load available models on component mount
+  useEffect(() => {
+    loadAvailableModels();
+  }, []);
+
+  const loadAvailableModels = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/chat/models');
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableModels(data.models || {});
+      }
+    } catch (error) {
+      console.error('Error loading available models:', error);
+    }
+  };
 
   const startConversation = () => {
     const initialMessage: Message = {
@@ -198,8 +219,8 @@ Let's start with the heart of it. What's the *feeling* behind this idea? What go
 
   const generateAIResponse = async (_userInput: string, conversationHistory: Message[]): Promise<string> => {
     try {
-      // Call ChatGPT API with streaming
-      const response = await callChatGPT(conversationHistory);
+      // Call AI API with streaming
+      const response = await callAI(conversationHistory);
       return response;
     } catch (error) {
       console.error('Error calling AI:', error);
@@ -207,9 +228,7 @@ Let's start with the heart of it. What's the *feeling* behind this idea? What go
     }
   };
 
-
-
-  const callChatGPT = async (conversationHistory: Message[]): Promise<string> => {
+  const callAI = async (conversationHistory: Message[]): Promise<string> => {
     return new Promise((resolve, reject) => {
       const response = fetch('http://localhost:4000/api/chat/project-overview', {
         method: 'POST',
@@ -220,7 +239,9 @@ Let's start with the heart of it. What's the *feeling* behind this idea? What go
           messages: conversationHistory,
           idea: idea,
           documents: documents,
-          tone: selectedTone
+          tone: selectedTone,
+          model_provider: modelProvider,
+          model_name: modelName
         }),
       });
 
@@ -267,9 +288,9 @@ Let's start with the heart of it. What's the *feeling* behind this idea? What go
                       return newMessages;
                     });
                   }
-                                 } catch {
-                   // Ignore parsing errors for incomplete chunks
-                 }
+                } catch {
+                  // Ignore parsing errors for incomplete chunks
+                }
               }
             }
           }
@@ -280,7 +301,7 @@ Let's start with the heart of it. What's the *feeling* behind this idea? What go
     });
   };
 
-    const generateFinalDocument = async () => {
+  const generateFinalDocument = async () => {
     setIsGenerating(true);
     
     try {
@@ -294,7 +315,7 @@ Let's start with the heart of it. What's the *feeling* behind this idea? What go
       const category = idea.category?.toLowerCase() || 'general';
       const template = await getCategoryTemplate(category);
       
-      // Generate document using ChatGPT
+      // Generate document using AI
       const documentContent = await generateDocumentWithAI(template);
       setGeneratedDocument(documentContent);
       setDocumentGenerated(true);
@@ -347,7 +368,7 @@ Let's start with the heart of it. What's the *feeling* behind this idea? What go
   };
 
   const generateDocumentWithAI = async (template: string): Promise<string> => {
-    console.log('Generating document with AI...', { template, messages: messages.length, idea, documents: documents.length, tone: selectedTone });
+    console.log('Generating document with AI...', { template, messages: messages.length, idea, documents: documents.length, tone: selectedTone, model_provider: modelProvider, model_name: modelName });
     
     const response = await fetch('http://localhost:4000/api/chat/generate-document', {
       method: 'POST',
@@ -359,7 +380,9 @@ Let's start with the heart of it. What's the *feeling* behind this idea? What go
         idea: idea,
         documents: documents,
         template: template,
-        tone: selectedTone
+        tone: selectedTone,
+        model_provider: modelProvider,
+        model_name: modelName
       }),
     });
 
@@ -500,6 +523,17 @@ ${conversationInsights.features}
             </div>
           </div>
           <div className="flex items-center space-x-4">
+            {/* Model Settings */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setShowModelSettings(!showModelSettings)}
+                className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800"
+              >
+                <Settings className="w-4 h-4" />
+                <span>AI Settings</span>
+              </button>
+            </div>
+            
             {/* Tone Selector */}
             <div className="flex items-center space-x-2">
               <label className="text-sm text-gray-600">Tone:</label>
@@ -524,6 +558,48 @@ ${conversationInsights.features}
             </button>
           </div>
         </div>
+
+        {/* Model Settings Panel */}
+        {showModelSettings && (
+          <div className="p-4 bg-gray-50 border-b">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">AI Provider</label>
+                <select
+                  value={modelProvider}
+                  onChange={(e) => {
+                    setModelProvider(e.target.value);
+                    // Reset model name to first available for the provider
+                    const models = availableModels[e.target.value] || [];
+                    setModelName(models[0] || '');
+                  }}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="openai">OpenAI (Cloud)</option>
+                  <option value="ollama">Ollama (Local)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Model</label>
+                <select
+                  value={modelName}
+                  onChange={(e) => setModelName(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  {availableModels[modelProvider]?.map(model => (
+                    <option key={model} value={model}>{model}</option>
+                  )) || <option value="">No models available</option>}
+                </select>
+              </div>
+            </div>
+            <div className="mt-2 text-xs text-gray-500">
+              {modelProvider === 'openai' ? 
+                'Using OpenAI cloud API (requires API key)' : 
+                'Using local Ollama models (requires Ollama running)'
+              }
+            </div>
+          </div>
+        )}
 
         {/* Chat Area */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
