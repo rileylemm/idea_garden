@@ -13,21 +13,52 @@ dist/
 frontend/node_modules/
 frontend/dist/
 
-# Backend
+# Backend (Legacy)
 backend/node_modules/
 backend/dist/
 
+# API (New Python Backend)
+api/venv/
+api/__pycache__/
+api/*.pyc
+api/*.pyo
+api/*.pyd
+api/.Python
+api/env/
+api/pip-log.txt
+api/pip-delete-this-directory.txt
+api/.tox/
+api/.coverage
+api/.pytest_cache/
+api/htmlcov/
+api/.coverage.*
+api/coverage.xml
+api/*.cover
+api/.hypothesis/
+
 # Database files
-backend/data/
 *.db
 *.sqlite
 *.sqlite3
+*.db-journal
+api/idea_garden.db
+api/idea_garden.db-journal
+db/
+data/
+
+# Backup files
+backups/
+*.backup
+*.bak
+*.old
+*.tmp
 
 # Logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+api/*.log
 
 # IDE files
 .vscode/
@@ -53,3 +84,61 @@ tmp/
 temp/
 __pycache__/
 *.pyc
+
+# Python
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
