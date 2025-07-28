@@ -1,6 +1,6 @@
 import type React from "react"
 import { Link, useLocation } from "react-router-dom"
-import { Home, Lightbulb, Plus, Search, Leaf } from "lucide-react"
+import { navIcons, typography } from "../utils/designSystem"
 
 export const Navbar: React.FC = () => {
   const location = useLocation()
@@ -10,20 +10,20 @@ export const Navbar: React.FC = () => {
   }
 
   const navItems = [
-    { path: "/", icon: Home, label: "Garden" },
-    { path: "/ideas", icon: Lightbulb, label: "Ideas" },
-    { path: "/create", icon: Plus, label: "Plant" },
-    { path: "/search", icon: Search, label: "Search" },
+    { path: "/", icon: navIcons.home, label: "Garden" },
+    { path: "/ideas", icon: navIcons.ideas, label: "Ideas" },
+    { path: "/create", icon: navIcons.create, label: "Plant" },
+    { path: "/search", icon: navIcons.search, label: "Search" },
   ]
 
   return (
-    <nav className="bg-white/80 backdrop-blur-md border-b border-green-200 sticky top-0 z-50">
+    <nav className="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 text-green-700 hover:text-green-800 transition-colors">
-            <Leaf className="h-8 w-8" />
-            <span className="text-xl font-bold">Idea Garden</span>
+          <Link to="/" className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition-colors">
+            <navIcons.home className="h-8 w-8" />
+            <span className={typography.h5}>Idea Garden</span>
           </Link>
 
           {/* Navigation Links */}
@@ -32,10 +32,10 @@ export const Navbar: React.FC = () => {
               <Link
                 key={path}
                 to={path}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   isActive(path)
-                    ? "bg-green-100 text-green-700 shadow-sm"
-                    : "text-gray-600 hover:text-green-700 hover:bg-green-50"
+                    ? "bg-blue-100 text-blue-700 shadow-sm"
+                    : "text-gray-600 hover:text-blue-700 hover:bg-blue-50"
                 }`}
               >
                 <Icon className="h-4 w-4" />
