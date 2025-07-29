@@ -10,6 +10,7 @@ import { GrowthProgress } from '../components/GrowthProgress';
 import { ResearchDocuments } from '../components/ResearchDocuments';
 import { RelatedIdeasCards } from '../components/RelatedIdeasCards';
 import { ActionSidebar } from '../components/ActionSidebar';
+import { ProjectOverviewChat } from '../components/ProjectOverviewChat';
 
 const IdeaDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,6 +19,7 @@ const IdeaDetail: React.FC = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [showProjectOverview, setShowProjectOverview] = useState(false);
 
   useEffect(() => {
     const fetchIdea = async () => {
@@ -56,14 +58,8 @@ const IdeaDetail: React.FC = () => {
           break;
         
         case 'overview':
-          // Generate AI summary
-          try {
-            const summary = await apiService.generateSummary(idea.id!);
-            console.log('AI Summary generated:', summary);
-            // You could show this in a modal or update the UI
-          } catch (error) {
-            console.error('Error generating summary:', error);
-          }
+          // Open project overview chat modal
+          setShowProjectOverview(true);
           break;
         
         case 'action':
@@ -98,7 +94,7 @@ const IdeaDetail: React.FC = () => {
           try {
             const suggestions = await apiService.getResearchSuggestions(idea.id!);
             console.log('Research suggestions:', suggestions);
-            // You could show this in a modal or sidebar
+            // You could show this in a modal for user to accept/reject
           } catch (error) {
             console.error('Error getting research suggestions:', error);
           }
@@ -112,36 +108,41 @@ const IdeaDetail: React.FC = () => {
     }
   };
 
+  const handleGenerateDocument = (documentContent: string) => {
+    // Handle the generated document - could save it as a new document
+    console.log('Generated document:', documentContent);
+    // You could implement saving the document here
+  };
+
   const handleViewDocument = (doc: Document) => {
+    // Handle viewing a document
     console.log('View document:', doc);
-    // Handle document viewing
   };
 
   const handleEditDocument = (doc: Document) => {
+    // Handle editing a document
     console.log('Edit document:', doc);
-    // Handle document editing
   };
 
   const handleDeleteDocument = (doc: Document) => {
+    // Handle deleting a document
     console.log('Delete document:', doc);
-    // Handle document deletion
   };
 
   const handleUploadDocument = () => {
+    // Handle uploading a document
     console.log('Upload document');
-    // Handle document upload
   };
 
   const handleAddDocument = () => {
+    // Handle adding a document
     console.log('Add document');
-    // Handle adding new document
   };
 
   const handleDeleteIdea = async () => {
-    if (!idea || deleting) return;
-    
-    const confirmed = window.confirm('Are you sure you want to delete this idea? This action cannot be undone.');
-    if (!confirmed) return;
+    if (!idea || !window.confirm('Are you sure you want to delete this idea?')) {
+      return;
+    }
     
     setDeleting(true);
     try {
@@ -236,6 +237,18 @@ const IdeaDetail: React.FC = () => {
         {/* Sidebar Actions */}
         <ActionSidebar idea={idea} onAction={handleAction} />
       </div>
+
+      {/* Project Overview Chat Modal */}
+      {idea && (
+        <ProjectOverviewChat
+          isOpen={showProjectOverview}
+          onClose={() => setShowProjectOverview(false)}
+          idea={idea}
+          documents={documents}
+          onGenerateDocument={handleGenerateDocument}
+          conversationId={`idea-${idea.id}`}
+        />
+      )}
     </div>
   );
 };

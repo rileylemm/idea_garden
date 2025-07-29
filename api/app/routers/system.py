@@ -11,12 +11,22 @@ from app.models.idea import Idea, Document, ActionPlan
 
 router = APIRouter()
 
+# In-memory storage for AI settings (in production, this would be in a database)
+_ai_settings_storage = {
+    "provider": "openai",
+    "model": "gpt-3.5-turbo"
+}
+
 class UserPreferences(BaseModel):
     theme: str = "light"
     default_category: str = "general"
     auto_save: bool = True
     notifications_enabled: bool = True
     default_view: str = "dashboard"
+
+class AISettings(BaseModel):
+    provider: str = "openai"  # "openai" or "ollama"
+    model: str = "gpt-3.5-turbo"
 
 class SystemStats(BaseModel):
     total_ideas: int
@@ -70,6 +80,42 @@ async def update_user_preferences(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Preferences update error: {str(e)}")
+
+@router.get("/ai-settings")
+async def get_ai_settings():
+    """Get AI settings (provider and model preferences)."""
+    try:
+        # Return the stored AI settings
+        return {
+            "success": True,
+            "data": _ai_settings_storage
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI settings error: {str(e)}")
+
+@router.put("/ai-settings")
+async def update_ai_settings(ai_settings: AISettings):
+    """Update AI settings."""
+    try:
+        # Store the AI settings in memory
+        global _ai_settings_storage
+        _ai_settings_storage = {
+            "provider": ai_settings.provider,
+            "model": ai_settings.model
+        }
+        
+        return {
+            "success": True,
+            "data": {
+                "updated_ai_settings": ai_settings.dict(),
+                "timestamp": datetime.now().isoformat()
+            },
+            "message": "AI settings updated successfully"
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI settings update error: {str(e)}")
 
 @router.get("/health")
 async def get_system_health(db: Session = Depends(get_db)):

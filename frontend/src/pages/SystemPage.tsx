@@ -23,10 +23,12 @@ export const SystemPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [creatingBackup, setCreatingBackup] = useState(false);
   const [loadingModels, setLoadingModels] = useState(false);
+  const [savingAISettings, setSavingAISettings] = useState(false);
 
   useEffect(() => {
     fetchSystemData();
     fetchAIModels();
+    fetchAISettings();
   }, []);
 
   const fetchSystemData = async () => {
@@ -69,7 +71,25 @@ export const SystemPage: React.FC = () => {
     }
   };
 
-  const handleAISettingsChange = (updates: Partial<AISettings>) => {
+  const fetchAISettings = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/system/ai-settings');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          setAISettings(prev => ({
+            ...prev,
+            provider: data.data.provider || 'openai',
+            model: data.data.model || 'gpt-3.5-turbo'
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching AI settings:', error);
+    }
+  };
+
+  const handleAISettingsChange = async (updates: Partial<AISettings>) => {
     setAISettings(prev => {
       const newSettings = { ...prev, ...updates };
       
@@ -81,6 +101,33 @@ export const SystemPage: React.FC = () => {
       
       return newSettings;
     });
+  };
+
+  const handleSaveAISettings = async () => {
+    try {
+      setSavingAISettings(true);
+      
+      const response = await fetch('http://localhost:4000/api/system/ai-settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          provider: aiSettings.provider,
+          model: aiSettings.model
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to save AI settings');
+      } else {
+        console.log('AI settings saved successfully');
+      }
+    } catch (error) {
+      console.error('Error saving AI settings:', error);
+    } finally {
+      setSavingAISettings(false);
+    }
   };
 
   const handleCreateBackup = async () => {
@@ -168,6 +215,7 @@ export const SystemPage: React.FC = () => {
                   value={aiSettings.provider}
                   onChange={(e) => handleAISettingsChange({ provider: e.target.value as 'openai' | 'ollama' })}
                   className="px-3 py-1 border border-gray-300 rounded-md text-sm"
+                  disabled={savingAISettings}
                 >
                   <option value="openai">OpenAI (Cloud)</option>
                   <option value="ollama">Ollama (Local)</option>
@@ -179,7 +227,7 @@ export const SystemPage: React.FC = () => {
                   value={aiSettings.model}
                   onChange={(e) => handleAISettingsChange({ model: e.target.value })}
                   className="px-3 py-1 border border-gray-300 rounded-md text-sm"
-                  disabled={loadingModels}
+                  disabled={loadingModels || savingAISettings}
                 >
                   {loadingModels ? (
                     <option>Loading models...</option>
@@ -196,7 +244,17 @@ export const SystemPage: React.FC = () => {
                   'Using local Ollama models (requires Ollama running)'
                 }
               </div>
-              <div className="flex justify-end">
+              <div className="flex justify-end space-x-2">
+                {savingAISettings && (
+                  <span className="text-xs text-gray-500">Saving...</span>
+                )}
+                <button
+                  onClick={handleSaveAISettings}
+                  disabled={savingAISettings}
+                  className={`${buttonStyles.secondary} text-sm`}
+                >
+                  Save AI Settings
+                </button>
                 <button
                   onClick={fetchAIModels}
                   disabled={loadingModels}
