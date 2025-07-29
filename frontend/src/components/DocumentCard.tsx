@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Edit, Trash2, Calendar, X, MessageSquare, Sparkles, History } from 'lucide-react';
+import { FileText, Edit, Trash2, Calendar, X, MessageSquare, Sparkles, History, File } from 'lucide-react';
 import { Document } from '../services/api';
 
 interface DocumentCardProps {
@@ -14,6 +14,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document, onEdit, on
   const [showFullContent, setShowFullContent] = useState(false);
   
   const isAIGenerated = document.document_type === 'ai_generated';
+  const isUploadedFile = document.file_path && document.original_filename;
   
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'Recently';
@@ -23,6 +24,15 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document, onEdit, on
   const truncateContent = (content?: string, maxLength: number = 150) => {
     if (!content) return 'No content';
     return content.length > maxLength ? content.substring(0, maxLength) + '...' : content;
+  };
+
+  const formatFileSize = (bytes?: number) => {
+    if (!bytes) return '';
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const handleViewFullContent = () => {
@@ -56,6 +66,11 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document, onEdit, on
               {isAIGenerated && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                   AI Generated
+                </span>
+              )}
+              {isUploadedFile && (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  File Upload
                 </span>
               )}
             </div>
@@ -99,9 +114,25 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document, onEdit, on
       </div>
 
       <div className="space-y-3">
-        <p className="text-sm text-gray-600 leading-relaxed">
-          {truncateContent(document.content)}
-        </p>
+        {isUploadedFile && (
+          <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
+            <File className="h-4 w-4 text-gray-500" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {document.original_filename}
+              </p>
+              <p className="text-xs text-gray-500">
+                {formatFileSize(document.file_size)} • {document.mime_type}
+              </p>
+            </div>
+          </div>
+        )}
+        
+        {document.content && (
+          <p className="text-sm text-gray-600 leading-relaxed">
+            {truncateContent(document.content)}
+          </p>
+        )}
         
         {document.content && document.content.length > 150 && (
           <button

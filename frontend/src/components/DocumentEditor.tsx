@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Save, FileText, Upload } from 'lucide-react';
+import { Save, FileText, Upload, X } from 'lucide-react';
 import { Document, CreateDocumentRequest, UpdateDocumentRequest } from '../services/api';
+import { Modal } from './Modal';
 
 interface DocumentEditorProps {
   isOpen: boolean;
@@ -121,36 +122,42 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
     fileInputRef.current?.click();
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <FileText className="h-5 w-5 text-blue-600" />
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">
-                {mode === 'create' ? 'Create New Document' : 'Edit Document'}
-              </h2>
-              <p className="text-sm text-gray-500">
-                {mode === 'create' ? 'Add research and insights to your idea' : 'Update your document'}
-              </p>
-            </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="xl"
+      showCloseButton={false}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center space-x-3">
+          <div className="p-2 bg-blue-100 rounded-lg">
+            <FileText className="h-5 w-5 text-blue-600" />
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              {mode === 'create' ? 'Create New Document' : 'Edit Document'}
+            </h2>
+            <p className="text-sm text-gray-500">
+              {mode === 'create' ? 'Add research and insights to your idea' : 'Update your document'}
+            </p>
+          </div>
         </div>
+        <button
+          onClick={onClose}
+          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-red-800 text-sm">{error}</p>
@@ -255,7 +262,6 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 }; 

@@ -3,14 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit, Share2, Trash2 } from 'lucide-react';
-import { Idea, Document } from '../services/api';
-import { apiService } from '../services/api';
+import { Idea, Document, apiService } from '../services/api';
 import { IdeaHeader } from '../components/IdeaHeader';
 import { GrowthProgress } from '../components/GrowthProgress';
 import { ResearchDocuments } from '../components/ResearchDocuments';
 import { RelatedIdeasCards } from '../components/RelatedIdeasCards';
 import { ActionSidebar } from '../components/ActionSidebar';
 import { ProjectOverviewChat } from '../components/ProjectOverviewChat';
+import { DocumentEditor } from '../components/DocumentEditor';
+import { DocumentUpload } from '../components/DocumentUpload';
+import { DocumentViewer } from '../components/DocumentViewer';
+import { Modal } from '../components/Modal';
+import { CreateDocumentRequest, UpdateDocumentRequest } from '../services/api';
 
 const IdeaDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +24,11 @@ const IdeaDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [showProjectOverview, setShowProjectOverview] = useState(false);
+  const [showDocumentEditor, setShowDocumentEditor] = useState(false);
+  const [showDocumentUpload, setShowDocumentUpload] = useState(false);
+  const [editingDocument, setEditingDocument] = useState<Document | null>(null);
+  const [showDocumentViewer, setShowDocumentViewer] = useState(false);
+  const [viewingDocument, setViewingDocument] = useState<Document | null>(null);
 
   useEffect(() => {
     const fetchIdea = async () => {
@@ -49,7 +58,7 @@ const IdeaDetail: React.FC = () => {
       switch (action) {
         case 'research':
           // This would typically open a document upload modal
-          console.log('Research action - would open document upload');
+          setShowDocumentUpload(true);
           break;
         
         case 'connect':
@@ -117,26 +126,57 @@ const IdeaDetail: React.FC = () => {
   const handleViewDocument = (doc: Document) => {
     // Handle viewing a document
     console.log('View document:', doc);
+    setViewingDocument(doc);
+    setShowDocumentViewer(true);
   };
 
   const handleEditDocument = (doc: Document) => {
     // Handle editing a document
     console.log('Edit document:', doc);
+    setEditingDocument(doc);
+    setShowDocumentEditor(true);
   };
 
-  const handleDeleteDocument = (doc: Document) => {
+  const handleDeleteDocument = async (doc: Document) => {
     // Handle deleting a document
     console.log('Delete document:', doc);
+    if (window.confirm('Are you sure you want to delete this document?')) {
+      try {
+        if (idea) {
+          await apiService.deleteDocument(idea.id!, doc.id!);
+          // Refresh documents
+          const updatedDocuments = await apiService.getDocumentsByIdeaId(idea.id!);
+          setDocuments(updatedDocuments);
+        }
+      } catch (error) {
+        console.error('Error deleting document:', error);
+      }
+    }
+  };
+
+  const handleSetAsOverview = async (doc: Document) => {
+    // Handle setting a document as overview
+    console.log('Set as overview:', doc);
+    try {
+      if (idea) {
+        await apiService.setDocumentAsOverview(idea.id!, doc.id!);
+        // Refresh documents
+        const updatedDocuments = await apiService.getDocumentsByIdeaId(idea.id!);
+        setDocuments(updatedDocuments);
+      }
+    } catch (error) {
+      console.error('Error setting document as overview:', error);
+    }
   };
 
   const handleUploadDocument = () => {
-    // Handle uploading a document
     console.log('Upload document');
+    setShowDocumentUpload(true);
   };
 
   const handleAddDocument = () => {
-    // Handle adding a document
     console.log('Add document');
+    setShowDocumentEditor(true);
   };
 
   const handleDeleteIdea = async () => {
@@ -228,6 +268,7 @@ const IdeaDetail: React.FC = () => {
             onDeleteDocument={handleDeleteDocument}
             onUploadDocument={handleUploadDocument}
             onAddDocument={handleAddDocument}
+            onSetAsOverview={handleSetAsOverview}
           />
 
           {/* Related Ideas Cards */}
@@ -249,6 +290,85 @@ const IdeaDetail: React.FC = () => {
           conversationId={`idea-${idea.id}`}
         />
       )}
+
+      {/* Document Editor Modal */}
+      <DocumentEditor
+        isOpen={showDocumentEditor}
+        onClose={() => {
+          setShowDocumentEditor(false);
+          setEditingDocument(null);
+        }}
+        onSave={async (documentData: CreateDocumentRequest | UpdateDocumentRequest) => {
+          try {
+            if (idea) {
+              if (editingDocument) {
+                // Update existing document
+                await apiService.updateDocument(idea.id!, editingDocument.id!, documentData as UpdateDocumentRequest);
+              } else {
+                // Create new document
+                await apiService.createDocument(idea.id!, documentData as CreateDocumentRequest);
+              }
+              // Refresh documents
+              const updatedDocuments = await apiService.getDocumentsByIdeaId(idea.id!);
+              setDocuments(updatedDocuments);
+              setShowDocumentEditor(false);
+              setEditingDocument(null);
+            }
+          } catch (error) {
+            console.error('Error saving document:', error);
+          }
+        }}
+        document={editingDocument}
+        mode={editingDocument ? "edit" : "create"}
+      />
+
+      {/* Document Viewer Modal */}
+      <Modal
+        isOpen={showDocumentViewer && !!viewingDocument}
+        onClose={() => {
+          setShowDocumentViewer(false);
+          setViewingDocument(null);
+        }}
+        size="xl"
+        showCloseButton={false}
+        title=""
+      >
+        {viewingDocument && (
+          <DocumentViewer
+            document={viewingDocument}
+            onSave={async (updatedContent: string) => {
+              try {
+                if (idea && viewingDocument) {
+                  await apiService.updateDocument(idea.id!, viewingDocument.id!, {
+                    content: updatedContent
+                  });
+                  // Refresh documents
+                  const updatedDocuments = await apiService.getDocumentsByIdeaId(idea.id!);
+                  setDocuments(updatedDocuments);
+                  setShowDocumentViewer(false);
+                  setViewingDocument(null);
+                }
+              } catch (error) {
+                console.error('Error updating document:', error);
+              }
+            }}
+          />
+        )}
+      </Modal>
+
+      {/* Document Upload Modal */}
+      <DocumentUpload
+        isOpen={showDocumentUpload}
+        onClose={() => setShowDocumentUpload(false)}
+        ideaId={idea?.id || 0}
+        onUploadComplete={async () => {
+          if (idea) {
+            // Refresh documents
+            const updatedDocuments = await apiService.getDocumentsByIdeaId(idea.id!);
+            setDocuments(updatedDocuments);
+          }
+        }}
+      />
     </div>
   );
 };

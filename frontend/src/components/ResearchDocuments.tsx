@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Plus, Upload, Eye, Edit, Trash2 } from 'lucide-react';
+import { FileText, Plus, Upload, Eye, Edit, Trash2, Star, Crown } from 'lucide-react';
 import { Document } from '../services/api';
 import { buttonStyles, cardStyles } from '../utils/designSystem';
 
@@ -10,6 +10,7 @@ interface ResearchDocumentsProps {
   onDeleteDocument?: (doc: Document) => void;
   onUploadDocument?: () => void;
   onAddDocument?: () => void;
+  onSetAsOverview?: (doc: Document) => void;
 }
 
 export const ResearchDocuments: React.FC<ResearchDocumentsProps> = ({
@@ -18,7 +19,8 @@ export const ResearchDocuments: React.FC<ResearchDocumentsProps> = ({
   onEditDocument,
   onDeleteDocument,
   onUploadDocument,
-  onAddDocument
+  onAddDocument,
+  onSetAsOverview
 }) => {
   return (
     <div className="mb-8">
@@ -49,8 +51,25 @@ export const ResearchDocuments: React.FC<ResearchDocumentsProps> = ({
         {documents.map((doc, index) => (
           <div key={index} className={`${cardStyles.base} p-4`}>
             <div className="flex items-start justify-between mb-3">
-              <h3 className="font-medium text-gray-900 truncate">{doc.title}</h3>
+              <div className="flex items-center space-x-2 flex-1 min-w-0">
+                <h3 className="font-medium text-gray-900 truncate">{doc.title}</h3>
+                {doc.is_overview && (
+                  <div className="flex items-center space-x-1 px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
+                    <Crown className="w-3 h-3" />
+                    <span>Overview</span>
+                  </div>
+                )}
+              </div>
               <div className="flex space-x-1">
+                {onSetAsOverview && !doc.is_overview && (
+                  <button 
+                    onClick={() => onSetAsOverview(doc)}
+                    className="p-1 text-gray-400 hover:text-yellow-600"
+                    title="Set as overview document"
+                  >
+                    <Star className="w-4 h-4" />
+                  </button>
+                )}
                 <button 
                   onClick={() => onViewDocument?.(doc)}
                   className="p-1 text-gray-400 hover:text-gray-600"
@@ -71,7 +90,13 @@ export const ResearchDocuments: React.FC<ResearchDocumentsProps> = ({
                 </button>
               </div>
             </div>
-            <p className="text-sm text-gray-600 mb-3 line-clamp-3">{doc.content}</p>
+            <div 
+              className="text-sm text-gray-600 mb-3 line-clamp-3 cursor-pointer hover:text-gray-800 transition-colors"
+              onClick={() => onViewDocument?.(doc)}
+              title="Click to view full document"
+            >
+              {doc.content}
+            </div>
             <div className="flex items-center justify-between text-xs text-gray-500">
               <span>Created {new Date(doc.created_at || '').toLocaleDateString()}</span>
               {doc.document_type === 'ai_generated' && (

@@ -7,6 +7,11 @@ class DocumentBase(BaseModel):
     content: Optional[str] = None
     document_type: str = "uploaded"
     conversation_id: Optional[str] = None
+    file_path: Optional[str] = None
+    original_filename: Optional[str] = None
+    file_size: Optional[int] = None
+    mime_type: Optional[str] = None
+    is_overview: Optional[bool] = False
 
 class DocumentCreate(DocumentBase):
     pass
@@ -16,6 +21,11 @@ class DocumentUpdate(BaseModel):
     content: Optional[str] = None
     document_type: Optional[str] = None
     conversation_id: Optional[str] = None
+    file_path: Optional[str] = None
+    original_filename: Optional[str] = None
+    file_size: Optional[int] = None
+    mime_type: Optional[str] = None
+    is_overview: Optional[bool] = None
 
 class Document(DocumentBase):
     id: int

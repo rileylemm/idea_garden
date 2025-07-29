@@ -53,6 +53,11 @@ export interface Document {
   content?: string;
   document_type?: 'uploaded' | 'ai_generated';
   conversation_id?: string;
+  file_path?: string;
+  original_filename?: string;
+  file_size?: number;
+  mime_type?: string;
+  is_overview?: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -507,6 +512,33 @@ class ApiService {
     throw new Error(response.error || 'Failed to create document');
   }
 
+  async uploadDocument(
+    ideaId: number, 
+    file: File, 
+    title?: string, 
+    content?: string, 
+    documentType: string = 'uploaded',
+    conversationId?: string
+  ): Promise<Document> {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    if (title) formData.append('title', title);
+    if (content) formData.append('content', content);
+    formData.append('document_type', documentType);
+    if (conversationId) formData.append('conversation_id', conversationId);
+
+    const response = await this.request<Document>(`/ideas/${ideaId}/documents/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.error || 'Failed to upload document');
+  }
+
   async updateDocument(ideaId: number, documentId: number, documentData: UpdateDocumentRequest): Promise<Document> {
     const response = await this.request<Document>(`/ideas/${ideaId}/documents/${documentId}`, {
       method: 'PUT',
@@ -527,6 +559,17 @@ class ApiService {
     if (!response.success) {
       throw new Error(response.error || 'Failed to delete document');
     }
+  }
+
+  async setDocumentAsOverview(ideaId: number, documentId: number): Promise<Document> {
+    const response = await this.request<Document>(`/ideas/${ideaId}/documents/${documentId}/set-overview`, {
+      method: 'POST',
+    });
+    
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.error || 'Failed to set document as overview');
   }
 
   // Document Versioning

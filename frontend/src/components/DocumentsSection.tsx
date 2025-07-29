@@ -4,6 +4,7 @@ import { Document, apiService, CreateDocumentRequest, UpdateDocumentRequest } fr
 import { DocumentCard } from './DocumentCard';
 import { DocumentEditor } from './DocumentEditor';
 import { DocumentVersionModal } from './DocumentVersionModal';
+import { DocumentUpload } from './DocumentUpload';
 
 interface DocumentsSectionProps {
   ideaId: number;
@@ -21,6 +22,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({ ideaId, onCo
   const [showVersionModal, setShowVersionModal] = useState(false);
   const [selectedDocumentId, setSelectedDocumentId] = useState<number | null>(null);
   const [selectedDocumentTitle, setSelectedDocumentTitle] = useState<string>('');
+  const [showUploadModal, setShowUploadModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -174,12 +176,12 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({ ideaId, onCo
           </div>
           <div className="flex items-center space-x-2">
             <button
-              onClick={handleQuickUploadClick}
+              onClick={() => setShowUploadModal(true)}
               className="flex items-center space-x-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              title="Quick upload .md file"
+              title="Upload files"
             >
               <Upload className="h-4 w-4" />
-              <span className="hidden sm:inline">Upload .md</span>
+              <span className="hidden sm:inline">Upload Files</span>
             </button>
             <button
               onClick={handleCreateDocument}
@@ -250,32 +252,43 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({ ideaId, onCo
         )}
       </div>
 
-              <DocumentEditor
-          isOpen={isEditorOpen}
-          onClose={handleCloseEditor}
-          onSave={handleSaveDocument}
-          document={editingDocument}
-          mode={editorMode}
-        />
-        
-        {/* Hidden file input for quick upload */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".md"
-          onChange={handleFileInputChange}
-          className="hidden"
-        />
+      <DocumentEditor
+        isOpen={isEditorOpen}
+        onClose={handleCloseEditor}
+        onSave={handleSaveDocument}
+        document={editingDocument}
+        mode={editorMode}
+      />
+      
+      {/* Hidden file input for quick upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".md"
+        onChange={handleFileInputChange}
+        className="hidden"
+      />
 
-        {/* Document Version Modal */}
-        {selectedDocumentId && (
-          <DocumentVersionModal
-            isOpen={showVersionModal}
-            onClose={handleCloseVersionModal}
-            documentId={selectedDocumentId}
-            documentTitle={selectedDocumentTitle}
-          />
-        )}
+      {/* Document Upload Modal */}
+      <DocumentUpload
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        ideaId={ideaId}
+        onUploadComplete={() => {
+          fetchDocuments();
+          setShowUploadModal(false);
+        }}
+      />
+
+      {/* Document Version Modal */}
+      {selectedDocumentId && (
+        <DocumentVersionModal
+          isOpen={showVersionModal}
+          onClose={handleCloseVersionModal}
+          documentId={selectedDocumentId}
+          documentTitle={selectedDocumentTitle}
+        />
+      )}
     </>
   );
 }; 
